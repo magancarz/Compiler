@@ -4,20 +4,14 @@
 %{
 #include <string>
 #include <iostream>
+#include "parser.tab.hpp"
 
 int yylex();
 %}
 
-%x COMMENT
+%s COMMENT
 
 %%
-
-\[                  { BEGIN(COMMENT); }
-<COMMENT> {
-    [^\]]           {}
-    \]              { BEGIN(INITIAL); }
-}
-
 \r                  {}
 \n                  {}
 [[:blank:]]+        {}
@@ -25,7 +19,7 @@ int yylex();
 PROCEDURE           { return PROCEDURE; }
 IS                  { return IS; }
 VAR                 { return VAR; }
-BEGIN               { return BEGIN; }
+BEGIN               { return _BEGIN; }
 END                 { return END; }
 
 PROGRAM             { return PROGRAM; }
@@ -59,9 +53,15 @@ WRITE               { return WRITE; }
 "<"                 { return LESS; }
 ">="                { return GREQ; }
 "<="                { return LEQ; }
-\(                  { return LB; }
-\)                  { return RB; }
-\,                  { return COMMA; }
-\;                  { return SEMICOLON; }
+"("                  { return LB; }
+")"                  { return RB; }
+","                  { return COMMA; }
+";"                  { return SEMICOLON; }
+
+"["                 { BEGIN(COMMENT); }
+<COMMENT>{
+[^\]]               ;
+"]"                 { BEGIN(INITIAL); }
+}
 
 %%

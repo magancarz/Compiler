@@ -6,7 +6,12 @@ int yylex(void);
 void yyerror(std::string error);
 %}
 
-%token PROCEDURE PROGRAM IS VAR BEGIN END
+%union {
+    unsigned int num;
+    std::string* str;
+}
+
+%token PROCEDURE PROGRAM IS VAR _BEGIN END
 %token IF THEN ELSE ENDIF
 %token WHILE DO ENDWHILE
 %token REPEAT UNTIL
@@ -27,12 +32,12 @@ procedures:
     | procedure                                                             {}
 
 procedure:
-    PROCEDURE proc_head IS VAR declarations BEGIN commands END
-    | PROCEDURE proc_head IS BEGIN commands END
+    PROCEDURE proc_head IS VAR declarations _BEGIN commands END
+    | PROCEDURE proc_head IS _BEGIN commands END
 
 main:
-    PROGRAM IS VAR declarations BEGIN commands END                          {}
-    | PROGRAM IS BEGIN commands END                                         {}
+    PROGRAM IS VAR declarations _BEGIN commands END                          {}
+    | PROGRAM IS _BEGIN commands END                                         {}
 
 commands:
     commands command                                                        {}
@@ -76,3 +81,14 @@ value:
     | IDENTIFIER                                                            {}
 
 %%
+
+void yyerror(std::string error) {
+    printf("%s\n", error.c_str());
+    exit(1);
+}
+
+int parser_main(int argc, char** argv) {
+    std::cout << "mleko" << std::endl;
+
+    return 0;
+}
