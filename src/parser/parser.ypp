@@ -1,0 +1,78 @@
+%{
+#include <iostream>
+#include <string>
+
+int yylex(void);
+void yyerror(std::string error);
+%}
+
+%token PROCEDURE PROGRAM IS VAR BEGIN END
+%token IF THEN ELSE ENDIF
+%token WHILE DO ENDWHILE
+%token REPEAT UNTIL
+%token READ WRITE
+%token NUM IDENTIFIER
+%token COMMA SEMICOLON LB RB
+%token ASSIGN PLUS MINUS MUL DIV MOD EQ NEQ
+%token GREATER LESS GREQ LEQ
+
+%%
+
+program_all: 
+    procedures main
+
+procedures:
+    procedures procedure                                                    {}
+    | procedures procedure                                                  {}
+    | procedure                                                             {}
+
+procedure:
+    PROCEDURE proc_head IS VAR declarations BEGIN commands END
+    | PROCEDURE proc_head IS BEGIN commands END
+
+main:
+    PROGRAM IS VAR declarations BEGIN commands END                          {}
+    | PROGRAM IS BEGIN commands END                                         {}
+
+commands:
+    commands command                                                        {}
+    | command                                                               {}
+
+command:
+    IDENTIFIER ASSIGN expression SEMICOLON                                  {}
+    | IF condition THEN commands ELSE commands ENDIF                        {}
+    | IF condition THEN commands ENDIF                                      {}
+    | WHILE condition DO commands ENDWHILE                                  {}
+    | REPEAT commands UNTIL condition SEMICOLON                             {}
+    | proc_head                                                             {}
+    | READ IDENTIFIER SEMICOLON                                             {}
+    | WRITE value SEMICOLON                                                 {}
+
+proc_head:
+    IDENTIFIER LB declarations RB                                           {}
+
+declarations:
+    declarations COMMA IDENTIFIER                                           {}
+    | IDENTIFIER                                                            {}
+
+expression:
+    value                                                                   {}
+    | value PLUS value                                                      {}
+    | value MINUS value                                                     {}
+    | value MUL value                                                       {}
+    | value DIV value                                                       {}
+    | value MOD value                                                       {}
+
+condition:
+    value EQ value                                                          {}
+    | value NEQ value                                                       {}
+    | value GREATER value                                                   {}
+    | value LESS value                                                      {}
+    | value GREQ value                                                      {}
+    | value LEQ value                                                       {}
+
+value:
+    NUM                                                                     {}
+    | IDENTIFIER                                                            {}
+
+%%
