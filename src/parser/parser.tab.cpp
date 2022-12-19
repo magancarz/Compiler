@@ -70,12 +70,18 @@
 #line 1 "src\\parser\\parser.ypp"
 
 #include <iostream>
+#include <fstream>
 #include <string>
+#include "../CodeGenerator.h"
+
+extern FILE* yyin;
+
+CodeGenerator* codeGenerator;
 
 int yylex(void);
 void yyerror(std::string error);
 
-#line 79 "src\\parser\\parser.tab.cpp"
+#line 85 "src\\parser\\parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -141,18 +147,19 @@ enum yysymbol_kind_t
   YYSYMBOL_LESS = 35,                      /* LESS  */
   YYSYMBOL_GREQ = 36,                      /* GREQ  */
   YYSYMBOL_LEQ = 37,                       /* LEQ  */
-  YYSYMBOL_YYACCEPT = 38,                  /* $accept  */
-  YYSYMBOL_program_all = 39,               /* program_all  */
-  YYSYMBOL_procedures = 40,                /* procedures  */
-  YYSYMBOL_procedure = 41,                 /* procedure  */
-  YYSYMBOL_main = 42,                      /* main  */
-  YYSYMBOL_commands = 43,                  /* commands  */
-  YYSYMBOL_command = 44,                   /* command  */
-  YYSYMBOL_proc_head = 45,                 /* proc_head  */
-  YYSYMBOL_declarations = 46,              /* declarations  */
-  YYSYMBOL_expression = 47,                /* expression  */
-  YYSYMBOL_condition = 48,                 /* condition  */
-  YYSYMBOL_value = 49                      /* value  */
+  YYSYMBOL_TEST = 38,                      /* TEST  */
+  YYSYMBOL_YYACCEPT = 39,                  /* $accept  */
+  YYSYMBOL_program_all = 40,               /* program_all  */
+  YYSYMBOL_procedures = 41,                /* procedures  */
+  YYSYMBOL_procedure = 42,                 /* procedure  */
+  YYSYMBOL_main = 43,                      /* main  */
+  YYSYMBOL_commands = 44,                  /* commands  */
+  YYSYMBOL_command = 45,                   /* command  */
+  YYSYMBOL_proc_head = 46,                 /* proc_head  */
+  YYSYMBOL_declarations = 47,              /* declarations  */
+  YYSYMBOL_expression = 48,                /* expression  */
+  YYSYMBOL_condition = 49,                 /* condition  */
+  YYSYMBOL_value = 50                      /* value  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -483,16 +490,16 @@ union yyalloc
 #define YYLAST   178
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  38
+#define YYNTOKENS  39
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  12
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  36
+#define YYNRULES  37
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  92
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   292
+#define YYMAXUTOK   293
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -535,17 +542,17 @@ static const yytype_int8 yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37
+      35,    36,    37,    38
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    27,    27,    30,    31,    32,    35,    36,    39,    40,
-      43,    44,    47,    48,    49,    50,    51,    52,    53,    54,
-      57,    60,    61,    64,    65,    66,    67,    68,    69,    72,
-      73,    74,    75,    76,    77,    80,    81
+       0,    34,    34,    37,    38,    39,    42,    43,    46,    47,
+      50,    51,    54,    55,    56,    57,    58,    59,    60,    61,
+      62,    65,    68,    69,    72,    73,    74,    75,    76,    77,
+      80,    81,    82,    83,    84,    85,    88,    89
 };
 #endif
 
@@ -566,8 +573,8 @@ static const char *const yytname[] =
   "DO", "ENDWHILE", "REPEAT", "UNTIL", "READ", "WRITE", "NUM",
   "IDENTIFIER", "COMMA", "SEMICOLON", "LB", "RB", "ASSIGN", "PLUS",
   "MINUS", "MUL", "DIV", "MOD", "EQ", "NEQ", "GREATER", "LESS", "GREQ",
-  "LEQ", "$accept", "program_all", "procedures", "procedure", "main",
-  "commands", "command", "proc_head", "declarations", "expression",
+  "LEQ", "TEST", "$accept", "program_all", "procedures", "procedure",
+  "main", "commands", "command", "proc_head", "declarations", "expression",
   "condition", "value", YY_NULLPTR
 };
 
@@ -609,16 +616,16 @@ static const yytype_int16 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,     0,     0,     0,     5,     0,     0,     1,     0,     3,
-       2,     0,     0,     0,    22,     0,     0,     0,     0,     0,
-       0,    20,     0,     0,     0,     0,     0,     0,     0,     0,
-      11,    17,     0,     0,    21,     0,    35,    36,     0,     0,
-       0,     0,     0,     0,     0,     7,    10,     0,     9,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,    18,
-      19,     0,    23,     0,     6,     0,    29,    30,    31,    32,
-      33,    34,     0,     0,    12,     0,     0,     0,     0,     0,
-       8,     0,    14,    15,    16,    24,    25,    26,    27,    28,
-       0,    13
+       3,     0,     0,     0,     5,     0,     0,     1,     0,     4,
+       2,     0,     0,     0,    23,     0,     0,    12,     0,    12,
+       0,    21,     0,     0,     0,    12,     0,     0,     0,     0,
+      11,    18,     0,     0,    22,    12,    36,    37,     0,     0,
+       0,     0,     0,     0,     0,     7,    10,    12,     9,     0,
+      12,     0,     0,     0,     0,     0,     0,    12,     0,    19,
+      20,     0,    24,     0,     6,     0,    30,    31,    32,    33,
+      34,    35,     0,     0,    13,     0,     0,     0,     0,     0,
+       8,    12,    15,    16,    17,    25,    26,    27,    28,    29,
+       0,    14
 };
 
 /* YYPGOTO[NTERM-NUM].  */
@@ -686,34 +693,34 @@ static const yytype_int8 yycheck[] =
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     3,    39,    40,    41,    21,    45,     0,     4,    41,
-      42,    24,     5,     5,    21,    46,     6,     7,     6,     7,
-      22,    25,    46,     9,    13,    16,    18,    19,    21,    43,
-      44,    45,    46,    43,    21,     7,    20,    21,    48,    49,
-      48,    43,    21,    49,    26,     8,    44,     7,     8,    43,
+       0,     3,    40,    41,    42,    21,    46,     0,     4,    42,
+      43,    24,     5,     5,    21,    47,     6,     7,     6,     7,
+      22,    25,    47,     9,    13,    16,    18,    19,    21,    44,
+      45,    46,    47,    44,    21,     7,    20,    21,    49,    50,
+      49,    44,    21,    50,    26,     8,    45,     7,     8,    44,
       10,    32,    33,    34,    35,    36,    37,    14,    17,    23,
-      23,    47,    49,    43,     8,    43,    49,    49,    49,    49,
-      49,    49,    43,    48,    23,    27,    28,    29,    30,    31,
-       8,    11,    12,    15,    23,    49,    49,    49,    49,    49,
-      43,    12
+      23,    48,    50,    44,     8,    44,    50,    50,    50,    50,
+      50,    50,    44,    49,    23,    27,    28,    29,    30,    31,
+       8,    11,    12,    15,    23,    50,    50,    50,    50,    50,
+      44,    12
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    38,    39,    40,    40,    40,    41,    41,    42,    42,
-      43,    43,    44,    44,    44,    44,    44,    44,    44,    44,
-      45,    46,    46,    47,    47,    47,    47,    47,    47,    48,
-      48,    48,    48,    48,    48,    49,    49
+       0,    39,    40,    41,    41,    41,    42,    42,    43,    43,
+      44,    44,    45,    45,    45,    45,    45,    45,    45,    45,
+      45,    46,    47,    47,    48,    48,    48,    48,    48,    48,
+      49,    49,    49,    49,    49,    49,    50,    50
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     2,     2,     2,     1,     8,     6,     7,     5,
-       2,     1,     4,     7,     5,     5,     5,     1,     3,     3,
-       4,     3,     1,     1,     3,     3,     3,     3,     3,     3,
-       3,     3,     3,     3,     3,     1,     1
+       0,     2,     2,     0,     2,     1,     8,     6,     7,     5,
+       2,     1,     0,     4,     7,     5,     5,     5,     1,     3,
+       3,     4,     3,     1,     1,     3,     3,     3,     3,     3,
+       3,     3,     3,     3,     3,     3,     1,     1
 };
 
 
@@ -1176,200 +1183,212 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 3: /* procedures: procedures procedure  */
-#line 30 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1183 "src\\parser\\parser.tab.cpp"
-    break;
-
   case 4: /* procedures: procedures procedure  */
-#line 31 "src\\parser\\parser.ypp"
+#line 38 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1189 "src\\parser\\parser.tab.cpp"
+#line 1190 "src\\parser\\parser.tab.cpp"
     break;
 
   case 5: /* procedures: procedure  */
-#line 32 "src\\parser\\parser.ypp"
+#line 39 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1195 "src\\parser\\parser.tab.cpp"
+#line 1196 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 6: /* procedure: PROCEDURE proc_head IS VAR declarations _BEGIN commands END  */
+#line 42 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1202 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 7: /* procedure: PROCEDURE proc_head IS _BEGIN commands END  */
+#line 43 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1208 "src\\parser\\parser.tab.cpp"
     break;
 
   case 8: /* main: PROGRAM IS VAR declarations _BEGIN commands END  */
-#line 39 "src\\parser\\parser.ypp"
-                                                                             {}
-#line 1201 "src\\parser\\parser.tab.cpp"
+#line 46 "src\\parser\\parser.ypp"
+                                                                            { codeGenerator->writeCode("HALT"); }
+#line 1214 "src\\parser\\parser.tab.cpp"
     break;
 
   case 9: /* main: PROGRAM IS _BEGIN commands END  */
-#line 40 "src\\parser\\parser.ypp"
-                                                                             {}
-#line 1207 "src\\parser\\parser.tab.cpp"
+#line 47 "src\\parser\\parser.ypp"
+                                    {codeGenerator->writeCode("HALT");}
+#line 1220 "src\\parser\\parser.tab.cpp"
     break;
 
   case 10: /* commands: commands command  */
-#line 43 "src\\parser\\parser.ypp"
+#line 50 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1213 "src\\parser\\parser.tab.cpp"
+#line 1226 "src\\parser\\parser.tab.cpp"
     break;
 
   case 11: /* commands: command  */
-#line 44 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1219 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 12: /* command: IDENTIFIER ASSIGN expression SEMICOLON  */
-#line 47 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1225 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 13: /* command: IF condition THEN commands ELSE commands ENDIF  */
-#line 48 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1231 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 14: /* command: IF condition THEN commands ENDIF  */
-#line 49 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1237 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 15: /* command: WHILE condition DO commands ENDWHILE  */
-#line 50 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1243 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 16: /* command: REPEAT commands UNTIL condition SEMICOLON  */
 #line 51 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1249 "src\\parser\\parser.tab.cpp"
+#line 1232 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 17: /* command: proc_head  */
-#line 52 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1255 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 18: /* command: READ IDENTIFIER SEMICOLON  */
-#line 53 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1261 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 19: /* command: WRITE value SEMICOLON  */
+  case 12: /* command: %empty  */
 #line 54 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1267 "src\\parser\\parser.tab.cpp"
+#line 1238 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 20: /* proc_head: IDENTIFIER LB declarations RB  */
+  case 13: /* command: IDENTIFIER ASSIGN expression SEMICOLON  */
+#line 55 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1244 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 14: /* command: IF condition THEN commands ELSE commands ENDIF  */
+#line 56 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1250 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 15: /* command: IF condition THEN commands ENDIF  */
 #line 57 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1273 "src\\parser\\parser.tab.cpp"
+#line 1256 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 21: /* declarations: declarations COMMA IDENTIFIER  */
+  case 16: /* command: WHILE condition DO commands ENDWHILE  */
+#line 58 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1262 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 17: /* command: REPEAT commands UNTIL condition SEMICOLON  */
+#line 59 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1268 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 18: /* command: proc_head  */
 #line 60 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1279 "src\\parser\\parser.tab.cpp"
+#line 1274 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 22: /* declarations: IDENTIFIER  */
+  case 19: /* command: READ IDENTIFIER SEMICOLON  */
 #line 61 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1285 "src\\parser\\parser.tab.cpp"
+#line 1280 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 23: /* expression: value  */
-#line 64 "src\\parser\\parser.ypp"
+  case 20: /* command: WRITE value SEMICOLON  */
+#line 62 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1291 "src\\parser\\parser.tab.cpp"
+#line 1286 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 24: /* expression: value PLUS value  */
+  case 21: /* proc_head: IDENTIFIER LB declarations RB  */
 #line 65 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1297 "src\\parser\\parser.tab.cpp"
+#line 1292 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 25: /* expression: value MINUS value  */
-#line 66 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1303 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 26: /* expression: value MUL value  */
-#line 67 "src\\parser\\parser.ypp"
-                                                                            {}
-#line 1309 "src\\parser\\parser.tab.cpp"
-    break;
-
-  case 27: /* expression: value DIV value  */
+  case 22: /* declarations: declarations COMMA IDENTIFIER  */
 #line 68 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1315 "src\\parser\\parser.tab.cpp"
+#line 1298 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 28: /* expression: value MOD value  */
+  case 23: /* declarations: IDENTIFIER  */
 #line 69 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1321 "src\\parser\\parser.tab.cpp"
+#line 1304 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 29: /* condition: value EQ value  */
+  case 24: /* expression: value  */
 #line 72 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1327 "src\\parser\\parser.tab.cpp"
+#line 1310 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 30: /* condition: value NEQ value  */
+  case 25: /* expression: value PLUS value  */
 #line 73 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1333 "src\\parser\\parser.tab.cpp"
+#line 1316 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 31: /* condition: value GREATER value  */
+  case 26: /* expression: value MINUS value  */
 #line 74 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1339 "src\\parser\\parser.tab.cpp"
+#line 1322 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 32: /* condition: value LESS value  */
+  case 27: /* expression: value MUL value  */
 #line 75 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1345 "src\\parser\\parser.tab.cpp"
+#line 1328 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 33: /* condition: value GREQ value  */
+  case 28: /* expression: value DIV value  */
 #line 76 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1351 "src\\parser\\parser.tab.cpp"
+#line 1334 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 34: /* condition: value LEQ value  */
+  case 29: /* expression: value MOD value  */
 #line 77 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1357 "src\\parser\\parser.tab.cpp"
+#line 1340 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 35: /* value: NUM  */
+  case 30: /* condition: value EQ value  */
 #line 80 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1363 "src\\parser\\parser.tab.cpp"
+#line 1346 "src\\parser\\parser.tab.cpp"
     break;
 
-  case 36: /* value: IDENTIFIER  */
+  case 31: /* condition: value NEQ value  */
 #line 81 "src\\parser\\parser.ypp"
                                                                             {}
-#line 1369 "src\\parser\\parser.tab.cpp"
+#line 1352 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 32: /* condition: value GREATER value  */
+#line 82 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1358 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 33: /* condition: value LESS value  */
+#line 83 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1364 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 34: /* condition: value GREQ value  */
+#line 84 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1370 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 35: /* condition: value LEQ value  */
+#line 85 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1376 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 36: /* value: NUM  */
+#line 88 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1382 "src\\parser\\parser.tab.cpp"
+    break;
+
+  case 37: /* value: IDENTIFIER  */
+#line 89 "src\\parser\\parser.ypp"
+                                                                            {}
+#line 1388 "src\\parser\\parser.tab.cpp"
     break;
 
 
-#line 1373 "src\\parser\\parser.tab.cpp"
+#line 1392 "src\\parser\\parser.tab.cpp"
 
       default: break;
     }
@@ -1562,7 +1581,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 83 "src\\parser\\parser.ypp"
+#line 91 "src\\parser\\parser.ypp"
 
 
 void yyerror(std::string error) {
@@ -1571,7 +1590,19 @@ void yyerror(std::string error) {
 }
 
 int parser_main(int argc, char** argv) {
-    std::cout << "mleko" << std::endl;
+    codeGenerator = new CodeGenerator(argc, argv);
+
+    yyin = codeGenerator->getInput();
+
+    try {
+        yyparse();
+    } catch(std::string error) {
+        yyerror(error);
+    }
+
+    std::cout << codeGenerator->getCode() << std::endl;
+
+    delete codeGenerator;
 
     return 0;
 }

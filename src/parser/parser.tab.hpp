@@ -88,7 +88,8 @@ extern int yydebug;
     GREATER = 289,                 /* GREATER  */
     LESS = 290,                    /* LESS  */
     GREQ = 291,                    /* GREQ  */
-    LEQ = 292                      /* LEQ  */
+    LEQ = 292,                     /* LEQ  */
+    TEST = 293                     /* TEST  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -97,12 +98,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 9 "src\\parser\\parser.ypp"
+#line 15 "src\\parser\\parser.ypp"
 
     unsigned int num;
     std::string* str;
 
-#line 106 "src\\parser\\parser.tab.hpp"
+#line 107 "src\\parser\\parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

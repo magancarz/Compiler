@@ -1,6 +1,12 @@
 %{
 #include <iostream>
+#include <fstream>
 #include <string>
+#include "../CodeGenerator.h"
+
+extern FILE* yyin;
+
+CodeGenerator* codeGenerator;
 
 int yylex(void);
 void yyerror(std::string error);
@@ -20,6 +26,7 @@ void yyerror(std::string error);
 %token COMMA SEMICOLON LB RB
 %token ASSIGN PLUS MINUS MUL DIV MOD EQ NEQ
 %token GREATER LESS GREQ LEQ
+%token TEST
 
 %%
 
@@ -27,24 +34,25 @@ program_all:
     procedures main
 
 procedures:
-    procedures procedure                                                    {}
+    %empty
     | procedures procedure                                                  {}
     | procedure                                                             {}
 
 procedure:
-    PROCEDURE proc_head IS VAR declarations _BEGIN commands END
-    | PROCEDURE proc_head IS _BEGIN commands END
+    PROCEDURE proc_head IS VAR declarations _BEGIN commands END             {}
+    | PROCEDURE proc_head IS _BEGIN commands END                            {}
 
 main:
-    PROGRAM IS VAR declarations _BEGIN commands END                          {}
-    | PROGRAM IS _BEGIN commands END                                         {}
+    PROGRAM IS VAR declarations _BEGIN commands END                         { codeGenerator->writeCode("HALT"); }
+    | PROGRAM IS _BEGIN commands END                                        { codeGenerator->writeCode("HALT"); }
 
 commands:
     commands command                                                        {}
     | command                                                               {}
 
 command:
-    IDENTIFIER ASSIGN expression SEMICOLON                                  {}
+    %empty                                                                  {}
+    | IDENTIFIER ASSIGN expression SEMICOLON                                {}
     | IF condition THEN commands ELSE commands ENDIF                        {}
     | IF condition THEN commands ENDIF                                      {}
     | WHILE condition DO commands ENDWHILE                                  {}
@@ -88,7 +96,19 @@ void yyerror(std::string error) {
 }
 
 int parser_main(int argc, char** argv) {
-    std::cout << "mleko" << std::endl;
+    codeGenerator = new CodeGenerator(argc, argv);
+
+    yyin = codeGenerator->getInput();
+
+    try {
+        yyparse();
+    } catch(std::string error) {
+        yyerror(error);
+    }
+
+    std::cout << codeGenerator->getCode() << std::endl;
+
+    delete codeGenerator;
 
     return 0;
 }

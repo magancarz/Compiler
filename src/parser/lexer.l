@@ -12,9 +12,10 @@ int yylex();
 %s COMMENT
 
 %%
-\r                  {}
 \n                  {}
 [[:blank:]]+        {}
+
+TEST {return TEST;}
 
 PROCEDURE           { return PROCEDURE; }
 IS                  { return IS; }
