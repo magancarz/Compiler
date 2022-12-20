@@ -1,0 +1,9 @@
+PROGRAM IS
+VAR a, b
+BEGIN
+	a := 4;
+	b := 2;
+	WRITE a/b;
+	a := a + b;
+	WRITE a;
+END
