@@ -44,6 +44,12 @@
 #if YYDEBUG
 extern int yydebug;
 #endif
+/* "%code requires" blocks.  */
+#line 19 "src\\parser\\parser.ypp"
+
+#include "../Variable.h"
+
+#line 53 "src\\parser\\parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -98,12 +104,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 15 "src\\parser\\parser.ypp"
+#line 23 "src\\parser\\parser.ypp"
 
     unsigned int num;
     std::string* str;
+    Variable* var;
 
-#line 107 "src\\parser\\parser.tab.hpp"
+#line 114 "src\\parser\\parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

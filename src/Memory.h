@@ -4,7 +4,7 @@
 #include <string>
 #include "Variable.h"
 
-#define MEMORY_DEBUG 1
+#define MEMORY_DEBUG 0
 
 class Memory {
 public:
@@ -18,6 +18,7 @@ public:
 
 	Variable* getVariableFromMemory(unsigned int memoryPosition);
 	Variable* getVariableFromMemory(const std::string& name);
+	Variable* getValueHolder(unsigned int value);
 
 	bool checkIfVariableExists(const std::string& name);
 
@@ -25,11 +26,11 @@ public:
 	Variable* findVariable(const std::string& name);
 	Variable* getVariable(const std::string& name);
 
-	inline std::vector<Variable>* getMemoryVariables() { return m_variables; }
+	inline std::vector<Variable*>* getMemoryVariables() { return m_variables; }
 
 private:
 	unsigned int m_freeMemoryPointer = 1;
 
-	std::vector<Variable>* m_variables = new std::vector<Variable>();
+	std::vector<Variable*>* m_variables = new std::vector<Variable*>();
 
 };

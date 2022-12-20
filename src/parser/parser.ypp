@@ -1,20 +1,29 @@
 %{
+#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include "../CodeGenerator.h"
+#include "../Memory.h"
+#include "../Variable.h"
 
 extern FILE* yyin;
 
 CodeGenerator* codeGenerator;
+Memory* memory;
 
 int yylex(void);
 void yyerror(std::string error);
 %}
 
+%code requires {
+#include "../Variable.h"
+}
+
 %union {
     unsigned int num;
     std::string* str;
+    Variable* var;
 }
 
 %token PROCEDURE PROGRAM IS VAR _BEGIN END
@@ -22,11 +31,16 @@ void yyerror(std::string error);
 %token WHILE DO ENDWHILE
 %token REPEAT UNTIL
 %token READ WRITE
-%token NUM IDENTIFIER
+%token <num> NUM
+%token <str> IDENTIFIER
 %token COMMA SEMICOLON LB RB
-%token ASSIGN PLUS MINUS MUL DIV MOD EQ NEQ
-%token GREATER LESS GREQ LEQ
+%token ASSIGN
+%left PLUS MINUS MUL DIV MOD 
+%token EQ NEQ GREATER LESS GREQ LEQ
 %token TEST
+
+%type <str> expression
+%type <var> value
 
 %%
 
@@ -35,8 +49,8 @@ program_all:
 
 procedures:
     %empty
-    | procedures procedure                                                  {}
-    | procedure                                                             {}
+    | procedures procedure                                                  
+    | procedure                                                             
 
 procedure:
     PROCEDURE proc_head IS VAR declarations _BEGIN commands END             {}
@@ -47,34 +61,37 @@ main:
     | PROGRAM IS _BEGIN commands END                                        { codeGenerator->writeCode("HALT"); }
 
 commands:
-    commands command                                                        {}
-    | command                                                               {}
+    commands command                                                        
+    | command                                                               
 
 command:
-    %empty                                                                  {}
-    | IDENTIFIER ASSIGN expression SEMICOLON                                {}
+    %empty                                                                  
+    | IDENTIFIER ASSIGN expression SEMICOLON                                { codeGenerator->assignValueToVariable(memory, *$1, *$3); }
     | IF condition THEN commands ELSE commands ENDIF                        {}
     | IF condition THEN commands ENDIF                                      {}
     | WHILE condition DO commands ENDWHILE                                  {}
     | REPEAT commands UNTIL condition SEMICOLON                             {}
     | proc_head                                                             {}
-    | READ IDENTIFIER SEMICOLON                                             {}
-    | WRITE value SEMICOLON                                                 {}
+    | READ IDENTIFIER SEMICOLON                                             { codeGenerator->readValue(memory, *$2); }
+    | WRITE value SEMICOLON                                                 { codeGenerator->printOutValue(memory, $2); }
 
 proc_head:
     IDENTIFIER LB declarations RB                                           {}
 
 declarations:
-    declarations COMMA IDENTIFIER                                           {}
-    | IDENTIFIER                                                            {}
+    declarations COMMA declaration                                          
+    | declaration                                                           
+
+declaration:
+    IDENTIFIER                                                              { memory->addVariableToMemory(*$1, 0); }
 
 expression:
-    value                                                                   {}
-    | value PLUS value                                                      {}
-    | value MINUS value                                                     {}
-    | value MUL value                                                       {}
-    | value DIV value                                                       {}
-    | value MOD value                                                       {}
+    value                                                                   { $$ = codeGenerator->setValueToAccumulator(memory, $1); }
+    | value PLUS value                                                      { $$ = codeGenerator->add(memory, $1, $3); }
+    | value MINUS value                                                     { $$ = codeGenerator->sub(memory, $1, $3); }
+    | value MUL value                                                       { $$ = codeGenerator->mul(memory, $1, $3); }
+    | value DIV value                                                       { $$ = codeGenerator->div(memory, $1, $3); }
+    | value MOD value                                                       { $$ = codeGenerator->mod(memory, $1, $3); }
 
 condition:
     value EQ value                                                          {}
@@ -85,8 +102,8 @@ condition:
     | value LEQ value                                                       {}
 
 value:
-    NUM                                                                     {}
-    | IDENTIFIER                                                            {}
+    NUM                                                                     { $$ = memory->getValueHolder($1); }
+    | IDENTIFIER                                                            { $$ = memory->getVariableFromMemory(*$1); }
 
 %%
 
@@ -97,6 +114,7 @@ void yyerror(std::string error) {
 
 int parser_main(int argc, char** argv) {
     codeGenerator = new CodeGenerator(argc, argv);
+    memory = new Memory();
 
     yyin = codeGenerator->getInput();
 
@@ -108,6 +126,7 @@ int parser_main(int argc, char** argv) {
 
     std::cout << codeGenerator->getCode() << std::endl;
 
+    delete memory;
     delete codeGenerator;
 
     return 0;

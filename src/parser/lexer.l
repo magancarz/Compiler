@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include "parser.tab.hpp"
+#include "../Variable.h"
 
 int yylex();
 %}
