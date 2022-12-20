@@ -1,10 +1,7 @@
 PROGRAM IS
-VAR a, b, c
+VAR a, b
 BEGIN
-	READ a;
-	a := 4;
-	b := 2;
-	c := 8;
-	b := c - 10;
-	WRITE b;
+	a := 8;
+	b := 3;
+	b := a * 3;
 END

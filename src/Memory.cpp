@@ -5,9 +5,21 @@ Memory::Memory() {
 	Variable* accumulator = new Variable(0, 0);
 	m_variables->push_back(accumulator);
 
-	// temp variable for calculations
-	Variable* temp = new Variable("temp", 0, 1);
-	m_variables->push_back(temp);
+	// variables for supporting calculations
+	Variable* temp1 = new Variable("temp1", 0, 1);
+	m_variables->push_back(temp1);
+	m_freeMemoryPointer++;
+	Variable* temp2 = new Variable("temp2", 0, 2);
+	m_variables->push_back(temp2);
+	m_freeMemoryPointer++;
+	Variable* temp3 = new Variable("temp3", 0, 3);
+	m_variables->push_back(temp3);
+	m_freeMemoryPointer++;
+	Variable* temp4 = new Variable("temp4", 0, 4);
+	m_variables->push_back(temp4);
+	m_freeMemoryPointer++;
+	Variable* temp5 = new Variable("temp5", 1, 5);
+	m_variables->push_back(temp5);
 	m_freeMemoryPointer++;
 }
 

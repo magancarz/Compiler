@@ -6,11 +6,6 @@
 #include "Memory.h"
 
 #define CODE_GENERATOR_DEBUG 0
-#define CODE_GEN_ADD 1
-#define CODE_GEN_SUB 2
-#define CODE_GEN_MUL 3
-#define CODE_GEN_DIV 4
-#define CODE_GEN_MOD 5
 
 class CodeGenerator {
 public:
@@ -20,17 +15,16 @@ public:
 	void writeCode(const std::string& code);
 	void writeCode(const std::string& code, unsigned int value);
 
-	//TODO: refactor
+	// accumulator related functions
 	void addValueToAccumulator(Memory* memory, Variable* variable);
 	void subValueFromAccumulator(Memory* memory, Variable* variable);
-	void mulValueFromAccumulator(Memory* memory, Variable* variable);
-	void divValueFromAccumulator(Memory* memory, Variable* variable);
-	void modValueFromAccumulator(Memory* memory, Variable* variable);
 
 	std::string* loadValueToAccumulator(Memory* memory, Variable* variable);
 
 	std::string* setValueToAccumulator(Memory* memory, Variable* variable);
 	std::string* setValueToAccumulator(Memory* memory, unsigned int value);
+
+	void storeValueFromAccumulator(Memory* memory, Variable* variable);
 
 	void assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
 
@@ -60,4 +54,6 @@ private:
 	std::ofstream m_output;
 
 	std::vector<std::string> m_code;
+
+	unsigned int m_commandPointer = 0;
 };
