@@ -5,7 +5,8 @@
 #include <vector>
 #include "Memory.h"
 
-#define CODE_GENERATOR_DEBUG 0
+#define CODE_GENERATOR_DEBUG 1
+#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
 
 class CodeGenerator {
 public:
