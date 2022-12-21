@@ -194,7 +194,6 @@ std::string* CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = aVal * bVal;
 	
-
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -416,7 +415,7 @@ std::string* CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
 		// return value if a == b
 		loadValueToAccumulator(memory, oneVariable);
 	}
-
+	 
 	std::string val = std::to_string(result);
 	return new std::string(val);
 }
