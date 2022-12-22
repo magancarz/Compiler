@@ -1232,7 +1232,7 @@ yyreduce:
 
   case 14: /* command: IF condition THEN commands ELSE commands ENDIF  */
 #line 73 "src\\parser\\parser.ypp"
-                                                                            {}
+                                                                            { (yyval.num) = codeGenerator->ifElseCondition(memory, (yyvsp[-5].condit), (yyvsp[-3].num), (yyvsp[-1].num)) + (yyvsp[-3].num) + (yyvsp[-1].num); }
 #line 1237 "src\\parser\\parser.tab.cpp"
     break;
 

@@ -70,7 +70,7 @@ commands:
 command:
     %empty                                                                  
     | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(memory, *$1, $3) + $3; }
-    | IF condition THEN commands ELSE commands ENDIF                        {}
+    | IF condition THEN commands ELSE commands ENDIF                        { $$ = codeGenerator->ifElseCondition(memory, $2, $4, $6) + $4 + $6; }
     | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition(memory, $2, $4) + $4; }
     | WHILE condition DO commands ENDWHILE                                  {}
     | REPEAT commands UNTIL condition SEMICOLON                             {}

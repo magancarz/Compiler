@@ -18,9 +18,6 @@ CodeGenerator::~CodeGenerator() {
 
 void CodeGenerator::writeCode(const std::string& code) {
 	std::stringstream finalCode;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	finalCode << m_commandPointer << ". ";
-	#endif
 	finalCode << code;
 	m_code.push_back(finalCode.str());
 	m_commandPointer++;
@@ -28,9 +25,6 @@ void CodeGenerator::writeCode(const std::string& code) {
 
 void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
 	std::stringstream finalCode;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	finalCode << m_commandPointer << ". ";
-	#endif
 	finalCode << code << " " << value;
 	m_code.push_back(finalCode.str());
 
@@ -39,20 +33,87 @@ void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
 
 void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code) {
 	std::stringstream finalCode;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	finalCode << codePosition << ". ";
-	#endif
 	finalCode << code;
 	m_code.at(codePosition) = finalCode.str();
 }
 
 void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code, unsigned int value) {
 	std::stringstream finalCode;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	finalCode << codePosition << ". ";
-	#endif
 	finalCode << code << " " << value;
 	m_code.at(codePosition) = finalCode.str();
+}
+
+
+void CodeGenerator::insertCode(unsigned int codePosition, const std::string& code) {
+	std::stringstream finalCode;
+	finalCode << code;
+	m_code.insert(m_code.begin() + codePosition, finalCode.str());
+
+	// alter all JUMP, JPOS and JZERO code after inserted code position
+	for(int i = codePosition + 1; i < m_code.size(); i++) {
+		std::string codeToChange = m_code.at(i);
+		std::istringstream iss(codeToChange);
+		std::string starts, codeValue;
+		iss >> starts;
+		unsigned int jumpValue;
+		if(starts == "JUMP") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JUMP", jumpValue + 1);
+			}
+		} else if(starts == "JPOS") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JPOS", jumpValue + 1);
+			}
+		} else if(starts == "JZERO") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JZERO", jumpValue + 1);
+			}
+		}
+	}
+
+	m_commandPointer++;
+}
+
+void CodeGenerator::insertCode(unsigned int codePosition, const std::string& code, unsigned int value) {
+	std::stringstream finalCode;
+	finalCode << code << " " << value;
+	m_code.insert(m_code.begin() + codePosition, finalCode.str());
+
+	// alter all JUMP, JPOS and JZERO code after inserted code position
+	for(int i = codePosition + 1; i < m_code.size(); i++) {
+		std::string codeToChange = m_code.at(i);
+		std::istringstream iss(codeToChange);
+		std::string starts, codeValue;
+		iss >> starts;
+		unsigned int jumpValue;
+		if(starts == "JUMP") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JUMP", jumpValue + 1);
+			}
+		} else if(starts == "JPOS") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JPOS", jumpValue + 1);
+			}
+		} else if(starts == "JZERO") {
+			iss >> codeValue;
+			jumpValue = std::stoi(codeValue);
+			if(jumpValue >= codePosition) {
+				changeCode(i, "JZERO", jumpValue + 1);
+			}
+		}
+	}
+
+	m_commandPointer++;
 }
 
 unsigned int CodeGenerator::addValueToAccumulator(Memory* memory, Variable* variable) {
@@ -185,7 +246,31 @@ unsigned int CodeGenerator::ifCondition(Memory* memory, Cond* condition, unsigne
 		changeCode(condition->jumpIfFalsePosition, "JZERO", commandStart);
 	}
 
-	return m_commandPointer - commandStart;
+	return m_commandPointer - commandStart + condition->conditionCodeSize;
+}
+
+unsigned int CodeGenerator::ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length) {
+	unsigned int commandStart = m_commandPointer;
+	insertCode(commandStart - commands2Length, "JUMP", commandStart + 1);
+	
+	unsigned int commandIfFalseStart = m_commandPointer;
+
+	std::string jumpIfFalseCodeToChange = m_code.at(condition->jumpIfFalsePosition);
+	std::istringstream iss1(jumpIfFalseCodeToChange);
+	std::string starts;
+	iss1 >> starts;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	iss1 >> starts;
+	#endif
+	if(starts == "JUMP") {
+		changeCode(condition->jumpIfFalsePosition, "JUMP", commandIfFalseStart);
+	} else if(starts == "JPOS") {
+		changeCode(condition->jumpIfFalsePosition, "JPOS", commandIfFalseStart);
+	} else  {
+		changeCode(condition->jumpIfFalsePosition, "JZERO", commandIfFalseStart);
+	}
+
+	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
 unsigned int CodeGenerator::readValue(Memory* memory, const std::string& variableName) {
@@ -936,8 +1021,13 @@ Cond* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 
 std::string CodeGenerator::getCode() {
 	std::stringstream code;
+	unsigned int i = 0;
 	for(std::string s : m_code) {
+		#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+		code << i << ". ";
+		#endif
 		code << s << "\n";
+		i++;
 	}
 
 	return code.str();

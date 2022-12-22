@@ -7,7 +7,7 @@
 #include "Memory.h"
 
 #define CODE_GENERATOR_DEBUG 0
-#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
+#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
 
 struct Cond {
 	unsigned int conditionCodeSize;
@@ -24,6 +24,8 @@ public:
 	void writeCode(const std::string& code, unsigned int value);
 	void changeCode(unsigned int codePosition, const std::string& code);
 	void changeCode(unsigned int codePosition, const std::string& code, unsigned int value);
+	void insertCode(unsigned int codePosition, const std::string& code);
+	void insertCode(unsigned int codePosition, const std::string& code, unsigned int value);
 
 	// code generating functions
 	unsigned int addValueToAccumulator(Memory* memory, Variable* variable);
@@ -41,6 +43,7 @@ public:
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
 
 	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
+	unsigned int ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length);
 
 	unsigned int readValue(Memory* memory, const std::string& variableName);
 	unsigned int printOutValue(Memory* memory, Variable* variable);
