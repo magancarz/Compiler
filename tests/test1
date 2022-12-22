@@ -1,15 +1,94 @@
 PROGRAM IS
-VAR n, p
+VAR a, b, c, d, e
 BEGIN
-	READ n;
-	REPEAT
-		p := n/2;
-		p := 2*p;
-		IF n>p THEN
-			WRITE 1;
-		ELSE
-			WRITE 0;
+	a := 5;
+	b := 2;
+	c := 5;
+	d := 8;
+
+	IF a > b THEN
+		e := 1;
+		WRITE e;
+	ENDIF
+
+	IF a > c THEN
+		e := 2;
+		WRITE e;
+	ENDIF
+
+	IF a > d THEN
+		e := 3;
+		WRITE e;
+	ENDIF
+
+	IF a >= b THEN
+		e := 4;
+		WRITE e;
+	ENDIF
+
+	IF a >= c THEN
+		e := 5;
+		WRITE e;
+	ENDIF
+
+	IF a >= d THEN
+		e := 6;
+		WRITE e;
+	ENDIF
+
+	IF a = b THEN
+		e := 7;
+		WRITE e;
+	ENDIF
+
+	IF a = c THEN
+		e := 8;
+		WRITE e;
+	ENDIF
+	
+	IF a = d THEN
+		e := 9;
+		WRITE e;
+	ENDIF
+
+	IF a <= b THEN
+		e := 10;
+		WRITE e;
+	ENDIF
+
+	IF a <= c THEN
+		e := 11;
+		WRITE e;
+	ENDIF
+
+	IF a <= d THEN
+		e := 12;
+		WRITE e;
+	ENDIF
+
+	IF a < b THEN
+		e := 13;
+		WRITE e;
+	ENDIF
+
+	IF a < c THEN
+		e := 14;
+		WRITE e;
+	ENDIF
+
+	IF a < d THEN
+		e := 15;
+		WRITE e;
+	ENDIF
+
+	IF a > b THEN
+		a := a + 2;
+		IF a > b THEN
+			a := a + 2;
+				IF a > b THEN
+				a := a + 2;
+			ENDIF
 		ENDIF
-		n := n/2;
-	UNTIL n = 0;
+	ENDIF
+	WRITE a;
 END

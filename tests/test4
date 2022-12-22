@@ -1,0 +1,17 @@
+PROGRAM IS
+VAR a, b, c, d
+BEGIN
+	a := 8;
+	b := 3;
+	c := 1;
+	d := 10;
+	WHILE a > b DO
+		WRITE a;
+		c := 1;
+		WHILE c < d DO
+			WRITE c;
+			c := c + 1;
+		ENDWHILE
+		a := a - 1;
+	ENDWHILE
+END

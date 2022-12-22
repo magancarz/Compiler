@@ -1,4 +1,31 @@
 PROGRAM IS
+VAR a, b, c, d, e
 BEGIN
+	a := 5;
+	b := 2;
+	c := 5;
+	d := 8;
 
+	IF a > 100 THEN
+		e := 15;
+		WRITE e;
+	ELSE
+		IF a > 100 THEN
+			e := 15;
+			WRITE e;
+		ELSE
+			IF a > 100 THEN
+				e := 15;
+				WRITE e;
+			ELSE
+				IF a > 100 THEN
+					e := 15;
+					WRITE e;
+				ELSE
+					WRITE 10;
+				ENDIF
+			ENDIF
+		ENDIF
+	ENDIF
+	WRITE a;
 END

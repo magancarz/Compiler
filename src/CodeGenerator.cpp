@@ -235,9 +235,6 @@ unsigned int CodeGenerator::ifCondition(Memory* memory, Cond* condition, unsigne
 	std::istringstream iss(codeToChange);
 	std::string starts;
 	iss >> starts;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	iss >> starts;
-	#endif
 	if(starts == "JUMP") {
 		changeCode(condition->jumpIfFalsePosition, "JUMP", commandStart);
 	} else if(starts == "JPOS") {
@@ -259,15 +256,12 @@ unsigned int CodeGenerator::ifElseCondition(Memory* memory, Cond* condition, uns
 	std::istringstream iss1(jumpIfFalseCodeToChange);
 	std::string starts;
 	iss1 >> starts;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	iss1 >> starts;
-	#endif
 	if(starts == "JUMP") {
-		changeCode(condition->jumpIfFalsePosition, "JUMP", commandIfFalseStart);
+		changeCode(condition->jumpIfFalsePosition, "JUMP", commandIfFalseStart - commands2Length);
 	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfFalsePosition, "JPOS", commandIfFalseStart);
+		changeCode(condition->jumpIfFalsePosition, "JPOS", commandIfFalseStart - commands2Length);
 	} else  {
-		changeCode(condition->jumpIfFalsePosition, "JZERO", commandIfFalseStart);
+		changeCode(condition->jumpIfFalsePosition, "JZERO", commandIfFalseStart - commands2Length);
 	}
 
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
@@ -276,16 +270,12 @@ unsigned int CodeGenerator::ifElseCondition(Memory* memory, Cond* condition, uns
 unsigned int CodeGenerator::whileLoop(Memory* memory, Cond* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
-	std::cout << commandsLength << std::endl;
 	writeCode("JUMP", commandStart - commandsLength - condition->conditionCodeSize);
 
 	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
 	std::istringstream iss(codeToChange);
 	std::string starts;
 	iss >> starts;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	iss >> starts;
-	#endif
 	if(starts == "JUMP") {
 		changeCode(condition->jumpIfFalsePosition, "JUMP", m_commandPointer);
 	} else if(starts == "JPOS") {
@@ -304,15 +294,12 @@ unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Cond* condition, uns
 	std::istringstream iss(codeToChange);
 	std::string starts;
 	iss >> starts;
-	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
-	iss >> starts;
-	#endif
 	if(starts == "JUMP") {
-		changeCode(condition->jumpIfTruePosition, "JUMP", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		changeCode(condition->jumpIfFalsePosition, "JUMP", m_commandPointer - commandsLength - condition->conditionCodeSize);
 	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfTruePosition, "JPOS", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		changeCode(condition->jumpIfFalsePosition, "JPOS", m_commandPointer - commandsLength - condition->conditionCodeSize);
 	} else  {
-		changeCode(condition->jumpIfTruePosition, "JZERO", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		changeCode(condition->jumpIfFalsePosition, "JZERO", m_commandPointer - commandsLength - condition->conditionCodeSize);
 	}
 
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
@@ -322,7 +309,7 @@ unsigned int CodeGenerator::readValue(Memory* memory, const std::string& variabl
 	unsigned int commandStart = m_commandPointer;
 	Variable* variable = memory->getVariable(variableName);
 
-	writeCode("READ", variable->getMemoryPosition());
+	writeCode("GET", variable->getMemoryPosition());
 
 	return m_commandPointer - commandStart;
 }
@@ -331,7 +318,10 @@ unsigned int CodeGenerator::printOutValue(Memory* memory, Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int variableMemoryPointer = variable->getMemoryPosition();
 	
-	writeCode("PUT", variableMemoryPointer);
+	if(variable->getName().empty())
+		writeCode("PUT", variable->getValue());
+	else 
+		writeCode("PUT", variableMemoryPointer);
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Printing out value assigned to variable %s", variable->getName().c_str());
 	#endif
@@ -799,7 +789,7 @@ Cond* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal == bVal)? 1 : 0;
 
-	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
+	unsigned int jumpIfFalsePosition, jumpIfFalsePosition2, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -826,19 +816,19 @@ Cond* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 		}
 
 		subValueFromAccumulator(memory, temp1Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 6);
+		unsigned int jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 5);
 
 		loadValueToAccumulator(memory, temp1Variable);
 		subValueFromAccumulator(memory, temp2Variable);
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfFalsePosition + 3);
 		
-		setValueToAccumulator(memory, 1);
+		writeCode("JPOS", jumpVariable + 5);
+		
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
 		
-		setValueToAccumulator(memory, zero);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfFalsePosition);
 	}
 
 	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};

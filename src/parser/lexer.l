@@ -16,7 +16,11 @@ int yylex();
 \n                  {}
 [[:blank:]]+        {}
 
-TEST {return TEST;}
+"["                 { BEGIN(COMMENT); }
+<COMMENT>{
+[^\]]               ;
+"]"                 { BEGIN(INITIAL); }
+}
 
 PROCEDURE           { return PROCEDURE; }
 IS                  { return IS; }
@@ -60,10 +64,5 @@ WRITE               { return WRITE; }
 ","                  { return COMMA; }
 ";"                  { return SEMICOLON; }
 
-"["                 { BEGIN(COMMENT); }
-<COMMENT>{
-[^\]]               ;
-"]"                 { BEGIN(INITIAL); }
-}
 
 %%
