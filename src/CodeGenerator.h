@@ -44,6 +44,7 @@ public:
 
 	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
 	unsigned int ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length);
+	unsigned int whileLoop(Memory* memory, Cond* condition, unsigned int commandsLength);
 
 	unsigned int readValue(Memory* memory, const std::string& variableName);
 	unsigned int printOutValue(Memory* memory, Variable* variable);

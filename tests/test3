@@ -2,15 +2,9 @@ PROGRAM IS
 VAR a, b, c
 BEGIN
 	a := 8;
-	b := 4;
-	IF a > b THEN
-		c := a + b;
-	ELSE
-		IF a > b THEN
-			c := c + b;
-		ELSE
-			c := a - b;
-		ENDIF
-	ENDIF
-	WRITE c;
+	WHILE a > 0 DO
+		b := b + 1;
+		a := a - 1;
+		WRITE a;
+	ENDWHILE
 END
