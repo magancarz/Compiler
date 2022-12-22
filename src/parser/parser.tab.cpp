@@ -1244,7 +1244,7 @@ yyreduce:
 
   case 17: /* command: REPEAT commands UNTIL condition SEMICOLON  */
 #line 76 "src\\parser\\parser.ypp"
-                                                                            {}
+                                                                            { (yyval.num) = codeGenerator->repeatUntilLoop(memory, (yyvsp[-1].condit), (yyvsp[-3].num)) + (yyvsp[-3].num); }
 #line 1249 "src\\parser\\parser.tab.cpp"
     break;
 

@@ -297,6 +297,27 @@ unsigned int CodeGenerator::whileLoop(Memory* memory, Cond* condition, unsigned 
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
+unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Cond* condition, unsigned int commandsLength) {
+	unsigned int commandStart = m_commandPointer;
+
+	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
+	std::istringstream iss(codeToChange);
+	std::string starts;
+	iss >> starts;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	iss >> starts;
+	#endif
+	if(starts == "JUMP") {
+		changeCode(condition->jumpIfTruePosition, "JUMP", m_commandPointer - commandsLength - condition->conditionCodeSize);
+	} else if(starts == "JPOS") {
+		changeCode(condition->jumpIfTruePosition, "JPOS", m_commandPointer - commandsLength - condition->conditionCodeSize);
+	} else  {
+		changeCode(condition->jumpIfTruePosition, "JZERO", m_commandPointer - commandsLength - condition->conditionCodeSize);
+	}
+
+	return m_commandPointer - commandStart + condition->conditionCodeSize;
+}
+
 unsigned int CodeGenerator::readValue(Memory* memory, const std::string& variableName) {
 	unsigned int commandStart = m_commandPointer;
 	Variable* variable = memory->getVariable(variableName);

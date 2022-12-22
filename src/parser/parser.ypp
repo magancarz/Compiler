@@ -73,7 +73,7 @@ command:
     | IF condition THEN commands ELSE commands ENDIF                        { $$ = codeGenerator->ifElseCondition(memory, $2, $4, $6) + $4 + $6; }
     | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition(memory, $2, $4) + $4; }
     | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop(memory, $2, $4) + $4; }
-    | REPEAT commands UNTIL condition SEMICOLON                             {}
+    | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop(memory, $4, $2) + $2; }
     | proc_head                                                             {}
     | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(memory, *$2); }
     | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue(memory, $2); }

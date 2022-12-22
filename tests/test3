@@ -2,9 +2,9 @@ PROGRAM IS
 VAR a, b, c
 BEGIN
 	a := 8;
-	WHILE a > 0 DO
+	REPEAT
 		b := b + 1;
 		a := a - 1;
 		WRITE a;
-	ENDWHILE
+	UNTIL a > 0;
 END
