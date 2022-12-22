@@ -2,6 +2,6 @@ PROGRAM IS
 VAR n, p
 BEGIN
 	READ n;
-	n := n / 5;
+	n := n % 5;
 	WRITE n;
 END

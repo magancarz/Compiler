@@ -556,6 +556,8 @@ unsigned int CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 54);
 		subValueFromAccumulator(memory, temp2Variable);
+		writeCode("JZERO", jumpVariable + 5);
+		setValueToAccumulator(memory, zero);
 		writeCode("JPOS", jumpVariable + 54);
 
 		// start of the loop
@@ -695,6 +697,8 @@ unsigned int CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 54);
 		subValueFromAccumulator(memory, temp2Variable);
+		writeCode("JZERO", jumpVariable + 5);
+		loadValueToAccumulator(memory, temp2Variable);
 		writeCode("JPOS", jumpVariable + 54);
 
 		// start of the loop
