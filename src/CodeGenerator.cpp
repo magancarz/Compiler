@@ -9,7 +9,7 @@ CodeGenerator::CodeGenerator(int argc, char** argv) {
 
 	// initialize temp variables
 	writeCode("SET", 1);
-	writeCode("STORE", 5);
+	writeCode("STORE", 10);
 }
 
 CodeGenerator::~CodeGenerator() {
@@ -17,12 +17,21 @@ CodeGenerator::~CodeGenerator() {
 }
 
 void CodeGenerator::writeCode(const std::string& code) {
-	m_code.push_back(code);
+	std::stringstream finalCode;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	finalCode << m_commandPointer << ". ";
+	#endif
+	finalCode << code;
+	m_code.push_back(finalCode.str());
+
 	m_commandPointer++;
 }
 
 void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
 	std::stringstream finalCode;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	finalCode << m_commandPointer << ". ";
+	#endif
 	finalCode << code << " " << value;
 	m_code.push_back(finalCode.str());
 
@@ -86,11 +95,6 @@ void CodeGenerator::storeValueFromAccumulator(Memory* memory, Variable* variable
 	variable->setValue(accumulator->getValue());
 
 	writeCode("STORE", variable->getMemoryPosition());
-
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d from accumulator to the variable named %s at position %d.\n",
-		accumulator->getValue().c_str(), variable->getName().c_str(), variable->getMemoryPosition());
-	#endif
 }
 
 void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, const std::string& value) {
@@ -198,80 +202,117 @@ std::string* CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
 		setValueToAccumulator(memory, result);
-	} else if(a->getName().empty() || b->getName().empty()) {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* resultVariable = memory->getVariableFromMemory(4);
-		Variable* oneVariable = memory->getVariableFromMemory(5);
-		
-		if(a->getName().empty()) {
-			setValueToAccumulator(memory, a->getValue());
-			storeValueFromAccumulator(memory, temp1Variable);
-			a = temp1Variable;
-			loadValueToAccumulator(memory, b);
-			storeValueFromAccumulator(memory, temp2Variable);
-		} else {
-			loadValueToAccumulator(memory, a);
-			storeValueFromAccumulator(memory, temp1Variable);
-			setValueToAccumulator(memory, b->getValue());
-			storeValueFromAccumulator(memory, temp2Variable);
-			b = temp2Variable;
-		}
-		
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
-
-		unsigned int startOfMultiplying = m_commandPointer;
-
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, temp1Variable);
-			
-		// store the result
-		storeValueFromAccumulator(memory, resultVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, temp2Variable);
-		subValueFromAccumulator(memory, oneVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfMultiplying);
-
-		loadValueToAccumulator(memory, resultVariable);
 	} else {
 		Variable* temp1Variable = memory->getVariableFromMemory(1);
 		Variable* temp2Variable = memory->getVariableFromMemory(2);
 		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* resultVariable = memory->getVariableFromMemory(4);
-		Variable* oneVariable = memory->getVariableFromMemory(5);
+		Variable* temp4Variable = memory->getVariableFromMemory(4);
+		Variable* temp5Variable = memory->getVariableFromMemory(5);
+		Variable* temp6Variable = memory->getVariableFromMemory(6);
+		Variable* oneVariable = memory->getVariableFromMemory(10);
 		
-		loadValueToAccumulator(memory, a);
+		// set up required variables
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+		} else {
+			loadValueToAccumulator(memory, a);
+		}
 		storeValueFromAccumulator(memory, temp1Variable);
-		setValueToAccumulator(memory, b);
+
+		// multiplier and remainder of multiplier
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+		} else {
+			loadValueToAccumulator(memory, b);
+		}
 		storeValueFromAccumulator(memory, temp2Variable);
-		
+
+		subValueFromAccumulator(memory, temp1Variable);
+		unsigned int jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 7);
+		loadValueToAccumulator(memory, temp2Variable);
+		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp2Variable);
+		loadValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp1Variable);
+
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		loadValueToAccumulator(memory, temp2Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+		// current power of 2
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		// result
 		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
+		storeValueFromAccumulator(memory, temp6Variable);
+
+		// check if multiplier is 0 or 1
+		loadValueToAccumulator(memory, temp2Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 38);
+		subValueFromAccumulator(memory, oneVariable);
+		writeCode("JPOS", jumpVariable + 5);
+		loadValueToAccumulator(memory, temp1Variable);
+		writeCode("JUMP", jumpVariable + 38);
+
+		// start of the loop
+		unsigned int startOfTheMultiplyLoop = m_commandPointer;
+
+		// check if current value >= remainding multiplier
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp3Variable);
+		
+		// jump to position where we can check if value > or == remainding multiplier
+		unsigned int jumpToCheckRelation = m_commandPointer;
+		writeCode("JZERO", jumpToCheckRelation + 8);
+
+		// multiply by 2 current power of 2 and it's multiplicand equivalent 
+		loadValueToAccumulator(memory, temp3Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		// go back to the start of the loop
+		writeCode("JUMP", startOfTheMultiplyLoop);
+
+		loadValueToAccumulator(memory, temp3Variable);
+		subValueFromAccumulator(memory, temp5Variable);
+
+		unsigned int jumpVariable1 = m_commandPointer;
+		writeCode("JZERO", jumpVariable1 + 18);
+
+		loadValueToAccumulator(memory, temp3Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
 
 		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, oneVariable);
+		storeValueFromAccumulator(memory, temp3Variable);
 
-		unsigned int startOfMultiplying = m_commandPointer;
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
 
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, temp1Variable);
-			
-		// store the result
-		storeValueFromAccumulator(memory, resultVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, temp2Variable);
-		subValueFromAccumulator(memory, oneVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfMultiplying);
-
-		loadValueToAccumulator(memory, resultVariable);
+		writeCode("JUMP", startOfTheMultiplyLoop);
+		
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
 	}
 
 	std::string val = std::to_string(result);
@@ -281,139 +322,136 @@ std::string* CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
 std::string* CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
-	unsigned int result = (bVal != 0)? aVal / bVal : 0;
+	unsigned int result = (bVal != 0)? aVal % bVal : 0;
 
 	unsigned int zero = 0;
-	// check extreme cases
-	if(aVal == 0 || bVal == 0) {
-		setValueToAccumulator(memory, zero);
-
-		std::string val = std::to_string(result);
-		return new std::string(val);
-	} else if(aVal == 1 || bVal == 1) {
-		Variable* resultVar = (aVal == 1) ? b : a;
-		loadValueToAccumulator(memory, resultVar);
-
-		std::string val = std::to_string(result);
-		return new std::string(val);
-	}
-
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
 		setValueToAccumulator(memory, result);
-	} else if(a->getName().empty() || b->getName().empty()) {
-		Variable* tempVariable = memory->getVariableFromMemory(1);
-		Variable* resultVariable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* oneVariable = memory->getVariableFromMemory(4);
-		
-		if(a->getName().empty()) {
-			setValueToAccumulator(memory, a->getValue());
-			storeValueFromAccumulator(memory, tempVariable);
-			a = tempVariable;
-		} else {
-			setValueToAccumulator(memory, b->getValue());
-			storeValueFromAccumulator(memory, temp3Variable);
-			b = temp3Variable;
-		}
-
-		// checking a <= b case
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
-
-		unsigned int divideActionStart = m_commandPointer;
-		writeCode("JZERO", divideActionStart + 13);
-
-		loadValueToAccumulator(memory, a);
-		storeValueFromAccumulator(memory, tempVariable);
-
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
-		
-		loadValueToAccumulator(memory, tempVariable);
-
-		unsigned int startOfDividingLoop = m_commandPointer;
-
-		subValueFromAccumulator(memory, b);
-			
-		// store the result
-		storeValueFromAccumulator(memory, tempVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, oneVariable);
-
-		loadValueToAccumulator(memory, tempVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfDividingLoop);
-
-		unsigned int endingJumpLocation = m_commandPointer;
-		writeCode("JUMP", endingJumpLocation + 6);
-
-		// checking if b > a
-		loadValueToAccumulator(memory, b);
-		subValueFromAccumulator(memory, a);
-		// return value if b > a
-		setValueToAccumulator(memory, zero);
-
-		unsigned int divisorBiggerThanDividendJump = m_commandPointer;
-		writeCode("JPOS", divisorBiggerThanDividendJump + 2);
-
-		// return value if a == b
-		loadValueToAccumulator(memory, oneVariable);
 	} else {
-		Variable* tempVariable = memory->getVariableFromMemory(1);
-		Variable* resultVariable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = memory->getVariableFromMemory(1);
+		Variable* temp2Variable = memory->getVariableFromMemory(2);
 		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* oneVariable = memory->getVariableFromMemory(4);
+		Variable* temp4Variable = memory->getVariableFromMemory(4);
 		Variable* temp5Variable = memory->getVariableFromMemory(5);
+		Variable* temp6Variable = memory->getVariableFromMemory(6);
+		Variable* oneVariable = memory->getVariableFromMemory(10);
+
+		// set up required variables
+		// multiplicand and current power of 2 multiplicand equivalent
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+		} else {
+			loadValueToAccumulator(memory, a);
+		}
+		storeValueFromAccumulator(memory, temp2Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		// multiplier and remainder of multiplier
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+		} else {
+			loadValueToAccumulator(memory, b);
+		}
+		storeValueFromAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
 		
-		// checking a <= b case
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
-
-		unsigned int divideActionStart = m_commandPointer;
-		writeCode("JZERO", divideActionStart + 13);
-
-		loadValueToAccumulator(memory, a);
-		storeValueFromAccumulator(memory, tempVariable);
-
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
+		// current power of 2
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
 		
-		loadValueToAccumulator(memory, tempVariable);
-
-		unsigned int startOfDividingLoop = m_commandPointer;
-
-		subValueFromAccumulator(memory, b);
-			
-		// store the result
-		storeValueFromAccumulator(memory, tempVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, oneVariable);
-
-		loadValueToAccumulator(memory, tempVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfDividingLoop);
-
-		unsigned int endingJumpLocation = m_commandPointer;
-		writeCode("JUMP", endingJumpLocation + 6);
-
-		// checking if b > a
-		loadValueToAccumulator(memory, b);
-		subValueFromAccumulator(memory, a);
-		// return value if b > a
+		// result
 		setValueToAccumulator(memory, zero);
+		storeValueFromAccumulator(memory, temp6Variable);
 
-		unsigned int divisorBiggerThanDividendJump = m_commandPointer;
-		writeCode("JPOS", divisorBiggerThanDividendJump + 2);
+		// check if divisor is 0 or bigger than dividend
+		loadValueToAccumulator(memory, temp1Variable);
+		unsigned int jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 54);
+		subValueFromAccumulator(memory, temp2Variable);
+		writeCode("JPOS", jumpVariable + 54);
 
-		// return value if a == b
-		loadValueToAccumulator(memory, oneVariable);
+		// start of the loop
+		unsigned int startOfTheMultiplyLoop = m_commandPointer;
+
+		// check if current value >= remainding multiplier
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		
+		// jump to position where we can check if value > or == remainding multiplier
+		jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 8);
+
+		// multiply by 2 current power of 2 and it's multiplicand equivalent 
+		loadValueToAccumulator(memory, temp3Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		// go back to the start of the loop
+		writeCode("JUMP", startOfTheMultiplyLoop);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		subValueFromAccumulator(memory, temp5Variable);
+
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 31);
+		
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JUMP", jumpVariable + 31);
+
+		unsigned int addToResultJumpPosition = m_commandPointer;
+		loadValueToAccumulator(memory, temp4Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp4Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 3);
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		loadValueToAccumulator(memory, temp3Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp3Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 3);
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		writeCode("JUMP", startOfTheMultiplyLoop);
+		
+		loadValueToAccumulator(memory, temp3Variable);
+		subValueFromAccumulator(memory, oneVariable);
+		jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 5);
+		writeCode("JUMP", addToResultJumpPosition);
+
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+
+		loadValueToAccumulator(memory, temp6Variable);
 	}
 	 
 	std::string val = std::to_string(result);
@@ -424,132 +462,135 @@ std::string* CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
-	
 
 	unsigned int zero = 0;
-	// check extreme cases
-	if(aVal == 0 || bVal == 0) {
-		setValueToAccumulator(memory, zero);
-
-		std::string val = std::to_string(result);
-		return new std::string(val);
-	} else if(aVal == 1 || bVal == 1) {
-		setValueToAccumulator(memory, zero);
-
-		std::string val = std::to_string(result);
-		return new std::string(val);
-	}
-
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
 		setValueToAccumulator(memory, result);
-	} else if(a->getName().empty() || b->getName().empty()) {
-		Variable* tempVariable = memory->getVariableFromMemory(1);
-		Variable* resultVariable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* oneVariable = memory->getVariableFromMemory(4);
-		
-		if(a->getName().empty()) {
-			setValueToAccumulator(memory, a->getValue());
-			storeValueFromAccumulator(memory, tempVariable);
-			a = tempVariable;
-		} else {
-			setValueToAccumulator(memory, b->getValue());
-			storeValueFromAccumulator(memory, temp3Variable);
-			b = temp3Variable;
-		}
-
-		// checking a <= b case
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
-
-		unsigned int divideActionStart = m_commandPointer;
-		writeCode("JZERO", divideActionStart + 13);
-
-		loadValueToAccumulator(memory, a);
-		storeValueFromAccumulator(memory, tempVariable);
-		storeValueFromAccumulator(memory, tempVariable);
-
-
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
-		
-		loadValueToAccumulator(memory, tempVariable);
-
-		unsigned int startOfDividingLoop = m_commandPointer;
-
-		subValueFromAccumulator(memory, b);
-			
-		// store the result
-		storeValueFromAccumulator(memory, tempVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, oneVariable);
-
-		loadValueToAccumulator(memory, tempVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfDividingLoop);
-
-		unsigned int endingJumpLocation = m_commandPointer;
-		writeCode("JUMP", endingJumpLocation + 2);
-
-		// return value if b > a
-		setValueToAccumulator(memory, zero);
-
 	} else {
-		Variable* tempVariable = memory->getVariableFromMemory(1);
-		Variable* resultVariable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = memory->getVariableFromMemory(1);
+		Variable* temp2Variable = memory->getVariableFromMemory(2);
 		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* oneVariable = memory->getVariableFromMemory(4);
+		Variable* temp4Variable = memory->getVariableFromMemory(4);
 		Variable* temp5Variable = memory->getVariableFromMemory(5);
+		Variable* temp6Variable = memory->getVariableFromMemory(6);
+		Variable* oneVariable = memory->getVariableFromMemory(10);
+
+		// set up required variables
+		// multiplicand and current power of 2 multiplicand equivalent
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+		} else {
+			loadValueToAccumulator(memory, a);
+		}
+		storeValueFromAccumulator(memory, temp2Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		// multiplier and remainder of multiplier
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+		} else {
+			loadValueToAccumulator(memory, b);
+		}
+		storeValueFromAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
 		
-		// checking a <= b case
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
-
-		unsigned int divideActionStart = m_commandPointer;
-		writeCode("JZERO", divideActionStart + 13);
-
-		loadValueToAccumulator(memory, a);
-		storeValueFromAccumulator(memory, tempVariable);
-
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, resultVariable);
+		// current power of 2
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
 		
-		loadValueToAccumulator(memory, tempVariable);
-
-		unsigned int startOfDividingLoop = m_commandPointer;
-
-		subValueFromAccumulator(memory, b);
-			
-		// store the result
-		storeValueFromAccumulator(memory, tempVariable);
-
-		// load multiplication count, subtract one from it and store it in temp1 variable
-		loadValueToAccumulator(memory, resultVariable);
-		addValueToAccumulator(memory, oneVariable);
-
-		loadValueToAccumulator(memory, tempVariable);
-
-		// check if accumulator is 0, if it is, then exit multiplication, if not, go back to startOfMultiplying position
-		writeCode("JPOS", startOfDividingLoop);
-
-		unsigned int endingJumpLocation = m_commandPointer;
-		writeCode("JUMP", endingJumpLocation + 6);
-
-		// checking if b > a
-		loadValueToAccumulator(memory, b);
-		subValueFromAccumulator(memory, a);
-		// return value if b > a
+		// result
 		setValueToAccumulator(memory, zero);
+		storeValueFromAccumulator(memory, temp6Variable);
 
-		unsigned int divisorBiggerThanDividendJump = m_commandPointer;
-		writeCode("JPOS", divisorBiggerThanDividendJump + 2);
+		// check if divisor is 0 or bigger than dividend
+		loadValueToAccumulator(memory, temp1Variable);
+		unsigned int jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 54);
+		subValueFromAccumulator(memory, temp2Variable);
+		writeCode("JPOS", jumpVariable + 54);
 
-		// return value if a == b
-		loadValueToAccumulator(memory, oneVariable);
+		// start of the loop
+		unsigned int startOfTheMultiplyLoop = m_commandPointer;
+
+		// check if current value >= remainding multiplier
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		
+		// jump to position where we can check if value > or == remainding multiplier
+		jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 8);
+
+		// multiply by 2 current power of 2 and it's multiplicand equivalent 
+		loadValueToAccumulator(memory, temp3Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		// go back to the start of the loop
+		writeCode("JUMP", startOfTheMultiplyLoop);
+
+		loadValueToAccumulator(memory, temp4Variable);
+		subValueFromAccumulator(memory, temp5Variable);
+
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 31);
+		
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JUMP", jumpVariable + 31);
+
+		unsigned int addToResultJumpPosition = m_commandPointer;
+		loadValueToAccumulator(memory, temp4Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp4Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 3);
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(memory, temp5Variable);
+		subValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp5Variable);
+
+		loadValueToAccumulator(memory, temp3Variable);
+		writeCode("HALF");
+		storeValueFromAccumulator(memory, temp3Variable);
+		jumpVariable = m_commandPointer;
+		writeCode("JPOS", jumpVariable + 3);
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp3Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+
+		setValueToAccumulator(memory, 1);
+		storeValueFromAccumulator(memory, temp3Variable);
+
+		loadValueToAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(memory, temp4Variable);
+
+		writeCode("JUMP", startOfTheMultiplyLoop);
+		
+		loadValueToAccumulator(memory, temp3Variable);
+		subValueFromAccumulator(memory, oneVariable);
+		jumpVariable = m_commandPointer;
+		writeCode("JZERO", jumpVariable + 5);
+		writeCode("JUMP", addToResultJumpPosition);
+
+		loadValueToAccumulator(memory, temp6Variable);
+		addValueToAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(memory, temp6Variable);
+
+		loadValueToAccumulator(memory, temp5Variable);
 	}
 
 	std::string val = std::to_string(result);

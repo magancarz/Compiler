@@ -6,20 +6,37 @@ Memory::Memory() {
 	m_variables->push_back(accumulator);
 
 	// variables for supporting calculations
-	Variable* temp1 = new Variable("temp1", 0, 1);
+	Variable* temp1 = new Variable("", 0, 1);
 	m_variables->push_back(temp1);
 	m_freeMemoryPointer++;
-	Variable* temp2 = new Variable("temp2", 0, 2);
+	Variable* temp2 = new Variable("", 0, 2);
 	m_variables->push_back(temp2);
 	m_freeMemoryPointer++;
-	Variable* temp3 = new Variable("temp3", 0, 3);
+	Variable* temp3 = new Variable("", 0, 3);
 	m_variables->push_back(temp3);
 	m_freeMemoryPointer++;
-	Variable* temp4 = new Variable("temp4", 0, 4);
+	Variable* temp4 = new Variable("", 0, 4);
 	m_variables->push_back(temp4);
 	m_freeMemoryPointer++;
-	Variable* temp5 = new Variable("temp5", 1, 5);
+	Variable* temp5 = new Variable("", 0, 5);
 	m_variables->push_back(temp5);
+	m_freeMemoryPointer++;
+	Variable* temp6 = new Variable("", 0, 6);
+	m_variables->push_back(temp6);
+	m_freeMemoryPointer++;
+	Variable* temp7 = new Variable("", 0, 7);
+	m_variables->push_back(temp7);
+	m_freeMemoryPointer++;
+	Variable* temp8 = new Variable("", 0, 8);
+	m_variables->push_back(temp8);
+	m_freeMemoryPointer++;
+	Variable* temp9 = new Variable("", 0, 9);
+	m_variables->push_back(temp9);
+	m_freeMemoryPointer++;
+
+	// variable with value 1
+	Variable* temp10 = new Variable("", 1, 10);
+	m_variables->push_back(temp10);
 	m_freeMemoryPointer++;
 }
 

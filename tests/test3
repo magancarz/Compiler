@@ -3,5 +3,5 @@ VAR a, b
 BEGIN
 	a := 8;
 	b := 3;
-	b := a * 3;
+	b := a * b;
 END

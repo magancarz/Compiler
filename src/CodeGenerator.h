@@ -6,6 +6,7 @@
 #include "Memory.h"
 
 #define CODE_GENERATOR_DEBUG 0
+#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
 
 class CodeGenerator {
 public:
