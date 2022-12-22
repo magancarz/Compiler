@@ -43,6 +43,7 @@ public:
 	std::string* mod(Memory* memory, Variable* a, Variable* b);
 	
 	void equal(Memory* memory, Variable* a, Variable* b);
+	void nequal(Memory* memory, Variable* a, Variable* b);
 	
 	std::string getCode();
 

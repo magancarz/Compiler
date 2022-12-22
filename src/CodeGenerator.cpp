@@ -646,10 +646,10 @@ void CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 	}
 }
 
-void CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+void CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal == bVal)? 1 : 0;
+	unsigned int result = (aVal != bVal)? 1 : 0;
 
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
@@ -686,11 +686,11 @@ void CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 		jumpPosition = m_commandPointer;
 		writeCode("JPOS", jumpPosition + 3);
 		
-		setValueToAccumulator(memory, 1);
+		setValueToAccumulator(memory, zero);
 		jumpPosition = m_commandPointer;
 		writeCode("JUMP", jumpPosition + 2);
 		
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(memory, 1);
 	}
 }
 

@@ -96,7 +96,7 @@ expression:
 
 condition:
     value EQ value                                                          { $$ = codeGenerator->equal(memory, $1, $3); }
-    | value NEQ value                                                       {}
+    | value NEQ value                                                       { $$ = codeGenerator->equal(memory, $1, $3); }
     | value GREATER value                                                   {}
     | value LESS value                                                      {}
     | value GREQ value                                                      {}
