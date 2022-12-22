@@ -3,5 +3,8 @@ VAR a, b
 BEGIN
 	a := 8;
 	b := 3;
-	b := a * b;
+	b := a + b;
+	IF a >= b THEN
+		WRITE a;
+	ENDIF
 END
