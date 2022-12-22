@@ -37,15 +37,13 @@ public:
 	void printOutValue(Memory* memory, Variable* variable);
 
 	std::string* add(Memory* memory, Variable* a, Variable* b);
-
 	std::string* sub(Memory* memory, Variable* a, Variable* b);
-
 	std::string* mul(Memory* memory, Variable* a, Variable* b);
-
 	std::string* div(Memory* memory, Variable* a, Variable* b);
-
 	std::string* mod(Memory* memory, Variable* a, Variable* b);
-
+	
+	void equal(Memory* memory, Variable* a, Variable* b);
+	
 	std::string getCode();
 
 	inline FILE* getInput() { return m_input; }

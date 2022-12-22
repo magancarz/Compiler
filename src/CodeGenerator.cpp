@@ -598,6 +598,102 @@ std::string* CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 	return new std::string(val);
 }
 
+void CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+	unsigned int aVal = a->getValue();
+	unsigned int bVal = b->getValue();
+	unsigned int result = (aVal == bVal)? 1 : 0;
+
+	unsigned int zero = 0;
+	Variable* accumulator = memory->getVariableFromMemory(0);
+	if(a->getName().empty() && b->getName().empty()) {
+		setValueToAccumulator(memory, result);
+		return;
+	} else {
+		Variable* temp1Variable = memory->getVariableFromMemory(1);
+		Variable* temp2Variable = memory->getVariableFromMemory(2);
+
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+			storeValueFromAccumulator(memory, temp1Variable);
+		} else {
+			loadValueToAccumulator(memory, a);
+			storeValueFromAccumulator(memory, temp1Variable);
+		}
+
+		// multiplier and remainder of multiplier
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+			storeValueFromAccumulator(memory, temp2Variable);
+		} else {
+			loadValueToAccumulator(memory, b);
+			storeValueFromAccumulator(memory, temp2Variable);
+		}
+
+		subValueFromAccumulator(memory, temp1Variable);
+		unsigned int jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 6);
+
+		loadValueToAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(memory, temp2Variable);
+		jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 3);
+		
+		setValueToAccumulator(memory, 1);
+		jumpPosition = m_commandPointer;
+		writeCode("JUMP", jumpPosition + 2);
+		
+		setValueToAccumulator(memory, zero);
+	}
+}
+
+void CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+	unsigned int aVal = a->getValue();
+	unsigned int bVal = b->getValue();
+	unsigned int result = (aVal == bVal)? 1 : 0;
+
+	unsigned int zero = 0;
+	Variable* accumulator = memory->getVariableFromMemory(0);
+	if(a->getName().empty() && b->getName().empty()) {
+		setValueToAccumulator(memory, result);
+		return;
+	} else {
+		Variable* temp1Variable = memory->getVariableFromMemory(1);
+		Variable* temp2Variable = memory->getVariableFromMemory(2);
+
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+			storeValueFromAccumulator(memory, temp1Variable);
+		} else {
+			loadValueToAccumulator(memory, a);
+			storeValueFromAccumulator(memory, temp1Variable);
+		}
+
+		// multiplier and remainder of multiplier
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+			storeValueFromAccumulator(memory, temp2Variable);
+		} else {
+			loadValueToAccumulator(memory, b);
+			storeValueFromAccumulator(memory, temp2Variable);
+		}
+
+		subValueFromAccumulator(memory, temp1Variable);
+		unsigned int jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 6);
+
+		loadValueToAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(memory, temp2Variable);
+		jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 3);
+		
+		setValueToAccumulator(memory, 1);
+		jumpPosition = m_commandPointer;
+		writeCode("JUMP", jumpPosition + 2);
+		
+		setValueToAccumulator(memory, zero);
+	}
+}
+
 std::string CodeGenerator::getCode() {
 	std::stringstream code;
 	for(std::string s : m_code) {
