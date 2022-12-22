@@ -791,8 +791,37 @@ void CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 			loadValueToAccumulator(memory, a);
 			storeValueFromAccumulator(memory, temp1Variable);
 		}
+		
+		if(b->getName().empty()) {
+			setValueToAccumulator(memory, bVal);
+		} else {
+			loadValueToAccumulator(memory, b);
+		}
+		
+		subValueFromAccumulator(memory, temp1Variable);
+		unsigned int jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 3);
+		setValueToAccumulator(memory, 1);
+		jumpPosition = m_commandPointer;
+		writeCode("JUMP", jumpPosition + 2);
+		setValueToAccumulator(memory, zero);
+	}
+}
 
-		// multiplier and remainder of multiplier
+void CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
+	unsigned int aVal = a->getValue();
+	unsigned int bVal = b->getValue();
+	unsigned int result = (aVal >= bVal)? 1 : 0;
+
+	unsigned int zero = 0;
+	Variable* accumulator = memory->getVariableFromMemory(0);
+	if(a->getName().empty() && b->getName().empty()) {
+		setValueToAccumulator(memory, result);
+		return;
+	} else {
+		Variable* temp1Variable = memory->getVariableFromMemory(1);
+		Variable* temp2Variable = memory->getVariableFromMemory(2);
+
 		if(b->getName().empty()) {
 			setValueToAccumulator(memory, bVal);
 			storeValueFromAccumulator(memory, temp2Variable);
@@ -801,19 +830,18 @@ void CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 			storeValueFromAccumulator(memory, temp2Variable);
 		}
 
-		subValueFromAccumulator(memory, temp1Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 6);
-
-		loadValueToAccumulator(memory, temp1Variable);
-		subValueFromAccumulator(memory, temp2Variable);
-		jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 3);
+		if(a->getName().empty()) {
+			setValueToAccumulator(memory, aVal);
+		} else {
+			loadValueToAccumulator(memory, a);
+		}
 		
+		subValueFromAccumulator(memory, temp2Variable);
+		unsigned int jumpPosition = m_commandPointer;
+		writeCode("JPOS", jumpPosition + 3);
 		setValueToAccumulator(memory, 1);
 		jumpPosition = m_commandPointer;
 		writeCode("JUMP", jumpPosition + 2);
-		
 		setValueToAccumulator(memory, zero);
 	}
 }
