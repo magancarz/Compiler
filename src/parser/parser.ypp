@@ -39,7 +39,7 @@ void yyerror(std::string error);
 %token EQ NEQ GREATER LESS GREQ LEQ
 %token TEST
 
-%type <str> expression
+%type <num> expression command
 %type <var> value
 
 %%
@@ -64,9 +64,8 @@ commands:
     commands command                                                        
     | command                                                               
 
-command:
-    %empty                                                                  
-    | IDENTIFIER ASSIGN expression SEMICOLON                                { codeGenerator->assignValueToVariable(memory, *$1, *$3); }
+command:                                                          
+    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(memory, *$1, $3); }
     | IF condition THEN commands ELSE commands ENDIF                        {}
     | IF condition THEN commands ENDIF                                      {}
     | WHILE condition DO commands ENDWHILE                                  {}

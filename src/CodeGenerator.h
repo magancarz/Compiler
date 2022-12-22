@@ -17,34 +17,34 @@ public:
 	void writeCode(const std::string& code, unsigned int value);
 
 	// accumulator related functions
-	void addValueToAccumulator(Memory* memory, Variable* variable);
-	void subValueFromAccumulator(Memory* memory, Variable* variable);
+	unsigned int addValueToAccumulator(Memory* memory, Variable* variable);
+	unsigned int subValueFromAccumulator(Memory* memory, Variable* variable);
 
-	std::string* loadValueToAccumulator(Memory* memory, Variable* variable);
+	unsigned int loadValueToAccumulator(Memory* memory, Variable* variable);
 
-	std::string* setValueToAccumulator(Memory* memory, Variable* variable);
-	std::string* setValueToAccumulator(Memory* memory, unsigned int value);
+	unsigned int setValueToAccumulator(Memory* memory, Variable* variable);
+	unsigned int setValueToAccumulator(Memory* memory, unsigned int value);
 
-	void storeValueFromAccumulator(Memory* memory, Variable* variable);
+	unsigned int storeValueFromAccumulator(Memory* memory, Variable* variable);
 
-	void assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
+	unsigned int assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
 
-	void assignValueToVariable(Memory* memory, const std::string& name, unsigned int value);
+	unsigned int assignValueToVariable(Memory* memory, const std::string& name, unsigned int value);
 
-	void assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
+	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
 
-	void readValue(Memory* memory, const std::string& variableName);
-	void printOutValue(Memory* memory, Variable* variable);
+	unsigned int readValue(Memory* memory, const std::string& variableName);
+	unsigned int printOutValue(Memory* memory, Variable* variable);
 
-	std::string* add(Memory* memory, Variable* a, Variable* b);
-
-	std::string* sub(Memory* memory, Variable* a, Variable* b);
-
-	std::string* mul(Memory* memory, Variable* a, Variable* b);
-
-	std::string* div(Memory* memory, Variable* a, Variable* b);
-
-	std::string* mod(Memory* memory, Variable* a, Variable* b);
+	unsigned int add(Memory* memory, Variable* a, Variable* b);
+	
+	unsigned int sub(Memory* memory, Variable* a, Variable* b);
+	
+	unsigned int mul(Memory* memory, Variable* a, Variable* b);
+	
+	unsigned int div(Memory* memory, Variable* a, Variable* b);
+	
+	unsigned int mod(Memory* memory, Variable* a, Variable* b);
 
 	std::string getCode();
 

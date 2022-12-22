@@ -38,21 +38,28 @@ void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
 	m_commandPointer++;
 }
 
-void CodeGenerator::addValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::addValueToAccumulator(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	accumulator->setValue(accumulator->getValue() + variable->getValue());
 
 	writeCode("ADD", variable->getMemoryPosition());
+	
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::subValueFromAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::subValueFromAccumulator(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	accumulator->setValue(accumulator->getValue() - variable->getValue());
 
 	writeCode("SUB", variable->getMemoryPosition());
+
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::loadValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::loadValueToAccumulator(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int value = variable->getValue();
 	memory->changeVariableValue(0, value);
 
@@ -61,11 +68,11 @@ std::string* CodeGenerator::loadValueToAccumulator(Memory* memory, Variable* var
 	printf("Assigned value %d to accumulator.\n", value);
 	#endif
 
-	std::string val = std::to_string(value);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::setValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int value = variable->getValue();
 	memory->changeVariableValue(0, value);
 
@@ -74,11 +81,11 @@ std::string* CodeGenerator::setValueToAccumulator(Memory* memory, Variable* vari
 	printf("Assigned value %d to accumulator.\n", value);
 	#endif
 
-	std::string val = std::to_string(value);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::setValueToAccumulator(Memory* memory, unsigned int value) {
+unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, unsigned int value) {
+	unsigned int commandStart = m_commandPointer;
 	memory->changeVariableValue(0, value);
 
 	writeCode("SET", value);	
@@ -87,17 +94,21 @@ std::string* CodeGenerator::setValueToAccumulator(Memory* memory, unsigned int v
 	#endif
 
 	std::string val = std::to_string(value);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::storeValueFromAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::storeValueFromAccumulator(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	variable->setValue(accumulator->getValue());
 
 	writeCode("STORE", variable->getMemoryPosition());
+
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, const std::string& value) {
+unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, const std::string& value) {
+	unsigned int commandStart = m_commandPointer;
 	if(!value.empty()) {
 		unsigned int intValue = std::stoi(value);
 		assignValueToVariable(memory, name, intValue);
@@ -105,9 +116,12 @@ void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& nam
 		unsigned int val = 0;
 		assignValueToVariable(memory, name, val);
 	}
+
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, unsigned int value) {
+unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, unsigned int value) {
+	unsigned int commandStart = m_commandPointer;
 	memory->changeVariableValue(name, value);
 	
 	unsigned int variableMemoryPointer = memory->getVariable(name)->getMemoryPosition();
@@ -115,9 +129,12 @@ void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& nam
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Assigned value %d to the variable named %s.\n", value, name.c_str());
 	#endif
+
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, Variable* variable) {
+unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int value = variable->getValue();
 	memory->changeVariableValue(name, value);
 	unsigned int variableMemoryPointer = memory->getVariable(name)->getMemoryPosition();
@@ -126,24 +143,33 @@ void CodeGenerator::assignValueToVariable(Memory* memory, const std::string& nam
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Assigned value %d to the variable named %s.\n", value, name.c_str());
 	#endif
+
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::readValue(Memory* memory, const std::string& variableName) {
+unsigned int CodeGenerator::readValue(Memory* memory, const std::string& variableName) {
+	unsigned int commandStart = m_commandPointer;
 	Variable* variable = memory->getVariable(variableName);
 
 	writeCode("READ", variable->getMemoryPosition());
+
+	return m_commandPointer - commandStart;
 }
 
-void CodeGenerator::printOutValue(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::printOutValue(Memory* memory, Variable* variable) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int variableMemoryPointer = variable->getMemoryPosition();
 	
 	writeCode("PUT", variableMemoryPointer);
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Printing out value assigned to variable %s", variable->getName().c_str());
 	#endif
+
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::add(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::add(Memory* memory, Variable* a, Variable* b) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = aVal + bVal;
@@ -162,11 +188,11 @@ std::string* CodeGenerator::add(Memory* memory, Variable* a, Variable* b) {
 		addValueToAccumulator(memory, b);
 	}
 
-	std::string val = std::to_string(aVal + bVal);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::sub(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::sub(Memory* memory, Variable* a, Variable* b) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = bVal > aVal ? 0 : aVal - bVal;
@@ -189,11 +215,11 @@ std::string* CodeGenerator::sub(Memory* memory, Variable* a, Variable* b) {
 		subValueFromAccumulator(memory, b);
 	}
 
-	std::string val = std::to_string(result);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = aVal * bVal;
@@ -316,11 +342,11 @@ std::string* CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
 		storeValueFromAccumulator(memory, temp6Variable);
 	}
 
-	std::string val = std::to_string(result);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
@@ -455,11 +481,11 @@ std::string* CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
 		loadValueToAccumulator(memory, temp6Variable);
 	}
 
-	std::string val = std::to_string(result);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
-std::string* CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
+	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
@@ -594,8 +620,7 @@ std::string* CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 		loadValueToAccumulator(memory, temp5Variable);
 	}
 
-	std::string val = std::to_string(result);
-	return new std::string(val);
+	return m_commandPointer - commandStart;
 }
 
 std::string CodeGenerator::getCode() {
