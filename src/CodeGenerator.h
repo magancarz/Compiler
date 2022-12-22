@@ -3,10 +3,17 @@
 #include <stdio.h>
 #include <fstream>
 #include <vector>
+#include <map>
 #include "Memory.h"
 
 #define CODE_GENERATOR_DEBUG 0
 #define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
+
+struct Cond {
+	unsigned int conditionCodeSize;
+	unsigned int jumpIfTruePosition;
+	unsigned int jumpIfFalsePosition;
+};
 
 class CodeGenerator {
 public:
@@ -15,15 +22,16 @@ public:
 
 	void writeCode(const std::string& code);
 	void writeCode(const std::string& code, unsigned int value);
+	void changeCode(unsigned int codePosition, const std::string& code);
+	void changeCode(unsigned int codePosition, const std::string& code, unsigned int value);
 
-	// accumulator related functions
+	// code generating functions
 	unsigned int addValueToAccumulator(Memory* memory, Variable* variable);
 	unsigned int subValueFromAccumulator(Memory* memory, Variable* variable);
 
 	unsigned int loadValueToAccumulator(Memory* memory, Variable* variable);
 
 	unsigned int setValueToAccumulator(Memory* memory, Variable* variable);
-	unsigned int setValueToAccumulator(Memory* memory, const std::string& name);
 	unsigned int setValueToAccumulator(Memory* memory, unsigned int value);
 
 	unsigned int storeValueFromAccumulator(Memory* memory, Variable* variable);
@@ -31,6 +39,8 @@ public:
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, unsigned int value);
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
+
+	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
 
 	unsigned int readValue(Memory* memory, const std::string& variableName);
 	unsigned int printOutValue(Memory* memory, Variable* variable);
@@ -41,12 +51,12 @@ public:
 	unsigned int div(Memory* memory, Variable* a, Variable* b);
 	unsigned int mod(Memory* memory, Variable* a, Variable* b);
 	
-	unsigned int equal(Memory* memory, Variable* a, Variable* b);
-	unsigned int nequal(Memory* memory, Variable* a, Variable* b);
-	unsigned int greater(Memory* memory, Variable* a, Variable* b);
-	unsigned int less(Memory* memory, Variable* a, Variable* b);
-	unsigned int greq(Memory* memory, Variable* a, Variable* b);
-	unsigned int leq(Memory* memory, Variable* a, Variable* b);
+	Cond* equal(Memory* memory, Variable* a, Variable* b);
+	Cond* nequal(Memory* memory, Variable* a, Variable* b);
+	Cond* greater(Memory* memory, Variable* a, Variable* b);
+	Cond* less(Memory* memory, Variable* a, Variable* b);
+	Cond* greq(Memory* memory, Variable* a, Variable* b);
+	Cond* leq(Memory* memory, Variable* a, Variable* b);
 	
 	std::string getCode();
 

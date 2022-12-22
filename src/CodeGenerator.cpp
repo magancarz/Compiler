@@ -23,7 +23,6 @@ void CodeGenerator::writeCode(const std::string& code) {
 	#endif
 	finalCode << code;
 	m_code.push_back(finalCode.str());
-
 	m_commandPointer++;
 }
 
@@ -36,6 +35,24 @@ void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
 	m_code.push_back(finalCode.str());
 
 	m_commandPointer++;
+}
+
+void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code) {
+	std::stringstream finalCode;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	finalCode << codePosition << ". ";
+	#endif
+	finalCode << code;
+	m_code.at(codePosition) = finalCode.str();
+}
+
+void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code, unsigned int value) {
+	std::stringstream finalCode;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	finalCode << codePosition << ". ";
+	#endif
+	finalCode << code << " " << value;
+	m_code.at(codePosition) = finalCode.str();
 }
 
 unsigned int CodeGenerator::addValueToAccumulator(Memory* memory, Variable* variable) {
@@ -84,19 +101,6 @@ unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, Variable* vari
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Assigned value %d to accumulator.\n", value);
 	#endif
-
-	return m_commandPointer - commandStart;
-}
-
-unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, const std::string& name) {
-	unsigned int commandStart = m_commandPointer;
-	Variable* variable = memory->findVariable(name);
-	if(variable != nullptr) {
-		writeCode("LOAD", variable->getMemoryPosition());
-	} else {
-		printf("chuj\n");
-		exit(1);
-	}
 
 	return m_commandPointer - commandStart;
 }
@@ -159,6 +163,27 @@ unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::str
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Assigned value %d to the variable named %s.\n", value, name.c_str());
 	#endif
+
+	return m_commandPointer - commandStart;
+}
+
+unsigned int CodeGenerator::ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength) {
+	unsigned int commandStart = m_commandPointer;
+
+	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
+	std::istringstream iss(codeToChange);
+	std::string starts;
+	iss >> starts;
+	#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+	iss >> starts;
+	#endif
+	if(starts == "JUMP") {
+		changeCode(condition->jumpIfFalsePosition, "JUMP", commandStart);
+	} else if(starts == "JPOS") {
+		changeCode(condition->jumpIfFalsePosition, "JPOS", commandStart);
+	} else  {
+		changeCode(condition->jumpIfFalsePosition, "JZERO", commandStart);
+	}
 
 	return m_commandPointer - commandStart;
 }
@@ -638,12 +663,13 @@ unsigned int CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal == bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -675,25 +701,27 @@ unsigned int CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 
 		loadValueToAccumulator(memory, temp1Variable);
 		subValueFromAccumulator(memory, temp2Variable);
-		jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 3);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JPOS", jumpIfFalsePosition + 3);
 		
 		setValueToAccumulator(memory, 1);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfTruePosition + 2);
 		
 		setValueToAccumulator(memory, zero);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
-unsigned int CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal != bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -725,25 +753,27 @@ unsigned int CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 
 		loadValueToAccumulator(memory, temp1Variable);
 		subValueFromAccumulator(memory, temp2Variable);
-		jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 3);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JPOS", jumpIfTruePosition + 3);
 		
 		setValueToAccumulator(memory, zero);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfFalsePosition + 2);
 		
 		setValueToAccumulator(memory, 1);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
-unsigned int CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal > bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -767,23 +797,25 @@ unsigned int CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
 		}
 
 		subValueFromAccumulator(memory, temp2Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JZERO", jumpPosition + 3);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JZERO", jumpIfFalsePosition + 3);
 		setValueToAccumulator(memory, 1);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfTruePosition + 2);
 		setValueToAccumulator(memory, zero);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
-unsigned int CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal < bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -807,23 +839,25 @@ unsigned int CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
 		}
 
 		subValueFromAccumulator(memory, temp2Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JZERO", jumpPosition + 3);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JZERO", jumpIfFalsePosition + 3);
 		setValueToAccumulator(memory, 1);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfTruePosition + 2);
 		setValueToAccumulator(memory, zero);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
-unsigned int CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal >= bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -847,23 +881,25 @@ unsigned int CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 		}
 		
 		subValueFromAccumulator(memory, temp1Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 3);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JPOS", jumpIfFalsePosition + 3);
 		setValueToAccumulator(memory, 1);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfTruePosition + 2);
 		setValueToAccumulator(memory, zero);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
-unsigned int CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
+Cond* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal >= bVal)? 1 : 0;
 
+	unsigned int jumpIfFalsePosition = 0, jumpIfTruePosition = 0;
 	unsigned int zero = 0;
 	Variable* accumulator = memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
@@ -887,15 +923,15 @@ unsigned int CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 		}
 		
 		subValueFromAccumulator(memory, temp2Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 3);
-		setValueToAccumulator(memory, 1);
-		jumpPosition = m_commandPointer;
-		writeCode("JUMP", jumpPosition + 2);
+		jumpIfFalsePosition = m_commandPointer;
+		writeCode("JPOS", jumpIfFalsePosition + 3);
+		jumpIfTruePosition = m_commandPointer;
+		writeCode("JUMP", jumpIfTruePosition + 2);
 		setValueToAccumulator(memory, zero);
 	}
 
-	return m_commandPointer - commandStart;
+	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	return condition;
 }
 
 std::string CodeGenerator::getCode() {

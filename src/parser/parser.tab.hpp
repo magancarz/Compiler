@@ -48,8 +48,9 @@ extern int yydebug;
 #line 19 "src\\parser\\parser.ypp"
 
 #include "../Variable.h"
+#include "../CodeGenerator.h"
 
-#line 53 "src\\parser\\parser.tab.hpp"
+#line 54 "src\\parser\\parser.tab.hpp"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -104,13 +105,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "src\\parser\\parser.ypp"
+#line 24 "src\\parser\\parser.ypp"
 
     unsigned int num;
     std::string* str;
     Variable* var;
+    Cond* condit;
 
-#line 114 "src\\parser\\parser.tab.hpp"
+#line 116 "src\\parser\\parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

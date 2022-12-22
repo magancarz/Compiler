@@ -1,7 +1,20 @@
 PROGRAM IS
-VAR a, b
+VAR a, b, c
 BEGIN
 	a := 8;
-	b := a;
-	b := a + b;
+	b := 4;
+	IF a > b THEN
+		IF a > b THEN
+			c := a + b;
+			WRITE c;
+			c := a - b;
+			WRITE c;
+			c := a * b;
+			WRITE c;
+			c := a / b;
+			WRITE c;
+			c := a % b;
+			WRITE c;
+		ENDIF
+	ENDIF
 END
