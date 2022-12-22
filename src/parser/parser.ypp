@@ -39,9 +39,9 @@ void yyerror(std::string error);
 %token EQ NEQ GREATER LESS GREQ LEQ
 %token TEST
 
-%type <str> expression
 %type <var> value
-%type <num> condition;
+%type <num> expression
+%type <num> condition command
 
 %%
 
