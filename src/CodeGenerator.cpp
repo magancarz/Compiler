@@ -76,10 +76,27 @@ unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, Variable* vari
 	unsigned int value = variable->getValue();
 	memory->changeVariableValue(0, value);
 
-	writeCode("SET", value);	
+	if(variable->getName().empty()) {
+		writeCode("SET", value);	
+	} else {
+		writeCode("LOAD", variable->getMemoryPosition());
+	}
 	#if CODE_GENERATOR_DEBUG 1
 	printf("Assigned value %d to accumulator.\n", value);
 	#endif
+
+	return m_commandPointer - commandStart;
+}
+
+unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, const std::string& name) {
+	unsigned int commandStart = m_commandPointer;
+	Variable* variable = memory->findVariable(name);
+	if(variable != nullptr) {
+		writeCode("LOAD", variable->getMemoryPosition());
+	} else {
+		printf("chuj\n");
+		exit(1);
+	}
 
 	return m_commandPointer - commandStart;
 }

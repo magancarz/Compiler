@@ -40,8 +40,7 @@ void yyerror(std::string error);
 %token TEST
 
 %type <var> value
-%type <num> expression
-%type <num> condition command
+%type <num> expression condition commands command
 
 %%
 
@@ -62,14 +61,14 @@ main:
     | PROGRAM IS _BEGIN commands END                                        { codeGenerator->writeCode("HALT"); }
 
 commands:
-    commands command                                                        
-    | command                                                               
+    commands command                                                        {}
+    | command                                                               {}
 
 command:
     %empty                                                                  
-    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(memory, *$1, $3); }
+    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(memory, *$1, $3) + $3; }
     | IF condition THEN commands ELSE commands ENDIF                        {}
-    | IF condition THEN commands ENDIF                                      {}
+    | IF condition THEN commands ENDIF                                      { printf("%d\n", $4); }
     | WHILE condition DO commands ENDWHILE                                  {}
     | REPEAT commands UNTIL condition SEMICOLON                             {}
     | proc_head                                                             {}

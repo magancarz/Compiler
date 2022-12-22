@@ -23,6 +23,7 @@ public:
 	unsigned int loadValueToAccumulator(Memory* memory, Variable* variable);
 
 	unsigned int setValueToAccumulator(Memory* memory, Variable* variable);
+	unsigned int setValueToAccumulator(Memory* memory, const std::string& name);
 	unsigned int setValueToAccumulator(Memory* memory, unsigned int value);
 
 	unsigned int storeValueFromAccumulator(Memory* memory, Variable* variable);
