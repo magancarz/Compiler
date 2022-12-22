@@ -44,6 +44,10 @@ public:
 	
 	void equal(Memory* memory, Variable* a, Variable* b);
 	void nequal(Memory* memory, Variable* a, Variable* b);
+	void greater(Memory* memory, Variable* a, Variable* b);
+	void less(Memory* memory, Variable* a, Variable* b);
+	void greq(Memory* memory, Variable* a, Variable* b);
+	void leq(Memory* memory, Variable* a, Variable* b);
 	
 	std::string getCode();
 
