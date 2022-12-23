@@ -6,6 +6,8 @@ class Variable {
 public:
 	Variable(unsigned int value, unsigned int memoryPosition);
 	Variable(const std::string& name, unsigned int value, unsigned int memoryPosition);
+	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition);
+	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition, Variable* pointing);
 
 	inline void setName(const std::string& name) { m_name = name; }
 	inline std::string getName() { return m_name; }
@@ -15,9 +17,19 @@ public:
 
 	inline unsigned int getMemoryPosition() { return m_memoryPosition; }
 
+	inline bool isInProcedure() { return m_isInProcedure; }
+
+	inline bool isPointer() { return m_isPointer; }
+	inline Variable* getPointedVariable() { return m_pointing; }
+
 private:
 	std::string m_name = "";
 	unsigned int m_value = 0;
 
-	unsigned int m_memoryPosition = 1;
+	unsigned int m_memoryPosition;
+
+	bool m_isInProcedure = false;
+
+	bool m_isPointer = false;
+	Variable* m_pointing = nullptr;
 };

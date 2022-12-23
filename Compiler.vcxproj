@@ -135,10 +135,12 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="src\parser\parser.tab.cpp" />
+    <ClCompile Include="src\Procedure.cpp" />
     <ClCompile Include="src\Variable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CodeGenerator.h" />
+    <ClInclude Include="src\Procedure.h" />
     <ClInclude Include="src\Memory.h" />
     <ClInclude Include="src\parser\parser.tab.hpp" />
     <ClInclude Include="src\Variable.h" />

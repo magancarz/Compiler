@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "Variable.h"
+#include "Procedure.h"
 
 #define MEMORY_DEBUG 0
 
@@ -12,7 +13,17 @@ public:
 	~Memory();
 
 	void addVariableToMemory(const std::string& name, unsigned int value);
+	Variable* addProcedureVariableToMemory(const std::string& name, bool isInProcedure);
+	Variable* addProcedurePointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
 	
+	void addNewProcedure();
+	void addVariableToProcedure(const std::string& name);
+	void setIdentifierToCurrentProcedure(const std::string& name);
+	Procedure* finishProcedure(unsigned int commandsSize);
+	void clearCurrentProcedure();
+
+	void loadVariableToProcedureHead(const std::string& name);
+
 	void changeVariableValue(unsigned int memoryPosition, unsigned int value);
 	void changeVariableValue(const std::string& name, unsigned int value);
 
@@ -28,9 +39,13 @@ public:
 
 	inline std::vector<Variable*>* getMemoryVariables() { return m_variables; }
 
+	inline std::vector<Procedure*>* getProcedures() { return m_procedures; }
+
 private:
 	unsigned int m_freeMemoryPointer = 1;
 
 	std::vector<Variable*>* m_variables = new std::vector<Variable*>();
-
+	
+	Procedure* m_currentProcedure = nullptr;
+	std::vector<Procedure*>* m_procedures = new std::vector<Procedure*>();
 };

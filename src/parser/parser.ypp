@@ -11,9 +11,12 @@ extern FILE* yyin;
 
 CodeGenerator* codeGenerator;
 Memory* memory;
+std::vector<Variable*>* procedureExecutionVariables;
 
 int yylex(void);
 void yyerror(std::string error);
+
+void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
 %}
 
 %code requires {
@@ -44,6 +47,7 @@ void yyerror(std::string error);
 %type <var> value
 %type <num> expression commands command
 %type <condit> condition
+%type <str> execute_proc_head
 
 %%
 
@@ -56,8 +60,8 @@ procedures:
     | procedure                                                             
 
 procedure:
-    PROCEDURE proc_head IS VAR declarations _BEGIN commands END             {}
-    | PROCEDURE proc_head IS _BEGIN commands END                            {}
+    PROCEDURE proc_head IS VAR proc_head_declarations _BEGIN commands END   { codeGenerator->generateProcedureEndCode(memory, memory->finishProcedure($7)); memory->clearCurrentProcedure(); }
+    | PROCEDURE proc_head IS _BEGIN commands END                            { codeGenerator->generateProcedureEndCode(memory, memory->finishProcedure($5)); memory->clearCurrentProcedure(); }
 
 main:
     PROGRAM IS VAR declarations _BEGIN commands END                         { codeGenerator->writeCode("HALT"); }
@@ -74,12 +78,29 @@ command:
     | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition(memory, $2, $4) + $4; }
     | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop(memory, $2, $4) + $4; }
     | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop(memory, $4, $2) + $2; }
-    | proc_head                                                             {}
+    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(memory, *$1, procedureExecutionVariables); }
     | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(memory, *$2); }
     | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue(memory, $2); }
 
+execute_proc_head:
+    IDENTIFIER LB execute_proc_head_declarations RB                         
+
+execute_proc_head_declarations:
+    execute_proc_head_declarations COMMA execute_proc_head_declaration      
+    | execute_proc_head_declaration                                                 
+    
+execute_proc_head_declaration:
+    IDENTIFIER                                                              { prepareProcedureExecutionVariable(memory, *$1); }
+
 proc_head:
-    IDENTIFIER LB declarations RB                                           {}
+    IDENTIFIER LB proc_head_declarations RB                                 { memory->setIdentifierToCurrentProcedure(*$1); }
+
+proc_head_declarations:
+    | proc_head_declarations COMMA proc_head_declaration                      
+    | proc_head_declaration                                                 
+    
+proc_head_declaration:
+    IDENTIFIER                                                              { memory->addVariableToProcedure(*$1); }
 
 declarations:
     declarations COMMA declaration                                          
@@ -113,6 +134,14 @@ value:
 void yyerror(std::string error) {
     printf("%s\n", error.c_str());
     exit(1);
+}
+
+void prepareProcedureExecutionVariable(Memory* memory, const std::string& name) {
+    if(procedureExecutionVariables == nullptr) {
+        procedureExecutionVariables = new std::vector<Variable*>();
+    }
+
+    procedureExecutionVariables->push_back(memory->getVariableFromMemory(name));
 }
 
 int parser_main(int argc, char** argv) {

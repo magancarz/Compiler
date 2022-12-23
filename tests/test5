@@ -2,6 +2,14 @@ PROGRAM IS
 VAR n, p
 BEGIN
 	READ n;
-	n := n % 5;
-	WRITE n;
+	REPEAT
+		p := n / 2;
+		p := 2 * p;
+		IF n > p THEN
+			WRITE 10;
+		ELSE
+			WRITE 9;
+		ENDIF
+		n := n / 2;
+	UNTIL n = 0;
 END

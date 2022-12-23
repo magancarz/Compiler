@@ -1,0 +1,15 @@
+PROCEDURE addfive(a) IS
+VAR x
+BEGIN
+	x := 5;
+	a := a + x;
+END
+
+PROGRAM IS
+VAR a, b
+BEGIN
+	a := 10;
+	WRITE a;
+	addfive(a)
+	WRITE a;
+END

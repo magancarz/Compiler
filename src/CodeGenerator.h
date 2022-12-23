@@ -28,6 +28,7 @@ public:
 	void insertCode(unsigned int codePosition, const std::string& code, unsigned int value);
 
 	// code generating functions
+
 	unsigned int addValueToAccumulator(Memory* memory, Variable* variable);
 	unsigned int subValueFromAccumulator(Memory* memory, Variable* variable);
 
@@ -37,10 +38,14 @@ public:
 	unsigned int setValueToAccumulator(Memory* memory, unsigned int value);
 
 	unsigned int storeValueFromAccumulator(Memory* memory, Variable* variable);
+	unsigned int storeValueFromAccumulatorToPointedVariable(Memory* memory, Variable* pointer);
 
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, unsigned int value);
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
+
+	unsigned int generateProcedureEndCode(Memory* memory, Procedure* procedure);
+	unsigned int executeProcedure(Memory* memory, const std::string& procedureName, std::vector<Variable*>* procedureExecutionVariables);
 
 	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
 	unsigned int ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length);
