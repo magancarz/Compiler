@@ -37,15 +37,21 @@ public:
 	Variable* findVariable(const std::string& name);
 	Variable* getVariable(const std::string& name);
 
-	inline std::vector<Variable*>* getMemoryVariables() { return m_variables; }
+	inline std::vector<Variable*>& getMemoryVariables() { return m_variables; }
 
-	inline std::vector<Procedure*>* getProcedures() { return m_procedures; }
+	inline std::vector<Procedure*>& getProcedures() { return m_procedures; }
+
+	void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
+	inline std::vector<Variable*>& getProcedureExecutionVariables() { return m_procedureExecutionVariables; }
+	void clearProcedureExecutionVariables();
 
 private:
 	unsigned int m_freeMemoryPointer = 1;
 
-	std::vector<Variable*>* m_variables = new std::vector<Variable*>();
+	std::vector<Variable*> m_variables;
 	
 	Procedure* m_currentProcedure = nullptr;
-	std::vector<Procedure*>* m_procedures = new std::vector<Procedure*>();
+	std::vector<Procedure*> m_procedures;
+
+	std::vector<Variable*> m_procedureExecutionVariables;
 };

@@ -243,9 +243,8 @@ unsigned int CodeGenerator::generateProcedureEndCode(Memory* memory, Procedure* 
 	
 	procedure->setProcedureStartPoint(commandStart - procedure->getCodeSize());
 
-	std::vector<Variable*>* procedureVariables = procedure->getProcedureVariables();
-	for(std::vector<Variable*>::iterator it = procedureVariables->begin(); it != procedureVariables->end(); it++) {
-		Variable* variable = *it;
+	std::vector<Variable*>& procedureVariables = procedure->getProcedureVariables();
+	for(Variable* variable : procedureVariables) {
 		if(variable->isPointer()) {
 			unsigned int pointedVariableMemoryPosition = variable->getPointedVariable()->getMemoryPosition();
 			loadValueToAccumulator(memory, variable);
@@ -253,20 +252,19 @@ unsigned int CodeGenerator::generateProcedureEndCode(Memory* memory, Procedure* 
 		}
 	}
 
-	writeCode("JUMPI", procedure->getProcedureVariables()->at(0)->getMemoryPosition());
-	procedure->setProcedureEndingJumpPosition(procedure->getProcedureVariables()->at(0)->getMemoryPosition());
+	writeCode("JUMPI", procedure->getProcedureVariables()[0]->getMemoryPosition());
+	procedure->setProcedureEndingJumpPosition(procedure->getProcedureVariables()[0]->getMemoryPosition());
 	insertCode(procedure->getProcedureStartPoint(), "JUMP", m_commandPointer + 1);
 	
 	return m_commandPointer - commandStart + procedure->getCodeSize();
 }
 
-unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& procedureName, std::vector<Variable*>* procedureExecutionVariables) {
+unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables) {
 	unsigned int commandStart = m_commandPointer;
 	
 	Procedure* procedure = nullptr;
-	std::vector<Procedure*>* procedures = memory->getProcedures();
-	for(std::vector<Procedure*>::iterator it = procedures->begin(); it != procedures->end(); it++) {
-		Procedure* proc = *it;
+	std::vector<Procedure*>& procedures = memory->getProcedures();
+	for(Procedure* proc : procedures) {
 		if(proc->getName() == procedureName) {
 			procedure = proc;
 			break;
@@ -279,7 +277,7 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 		unsigned int i = 0;
 		for(std::vector<Variable*>::iterator it = procedurePointers->begin(); it != procedurePointers->end(); it++) {
 			Variable* pointer = *it;
-			Variable* procExecVar = procedureExecutionVariables->at(i);
+			Variable* procExecVar = procedureExecutionVariables[i];
 			setValueToAccumulator(memory, procExecVar->getMemoryPosition());
 			storeValueFromAccumulator(memory, pointer->getPointedVariable());
 			loadValueToAccumulator(memory, procExecVar);
@@ -287,7 +285,7 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 		}
 		
 		setValueToAccumulator(memory, m_commandPointer + 3);
-		storeValueFromAccumulator(memory, procedure->getProcedureVariables()->at(0));
+		storeValueFromAccumulator(memory, procedure->getProcedureVariables()[0]);
 		writeCode("JUMP", procedure->getProcedureStartPoint() + 1);
 		
 	} else {
@@ -295,7 +293,7 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 		exit(1);
 	}
 
-	delete procedureExecutionVariables;
+	memory->clearProcedureExecutionVariables();
 
 	return m_commandPointer - commandStart;
 }

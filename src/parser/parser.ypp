@@ -11,12 +11,9 @@ extern FILE* yyin;
 
 CodeGenerator* codeGenerator;
 Memory* memory;
-std::vector<Variable*>* procedureExecutionVariables;
 
 int yylex(void);
 void yyerror(std::string error);
-
-void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
 %}
 
 %code requires {
@@ -78,7 +75,7 @@ command:
     | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition(memory, $2, $4) + $4; }
     | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop(memory, $2, $4) + $4; }
     | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop(memory, $4, $2) + $2; }
-    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(memory, *$1, procedureExecutionVariables); }
+    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(memory, *$1, memory->getProcedureExecutionVariables()); }
     | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(memory, *$2); }
     | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue(memory, $2); }
 
@@ -90,7 +87,7 @@ execute_proc_head_declarations:
     | execute_proc_head_declaration                                                 
     
 execute_proc_head_declaration:
-    IDENTIFIER                                                              { prepareProcedureExecutionVariable(memory, *$1); }
+    IDENTIFIER                                                              { memory->prepareProcedureExecutionVariable(memory, *$1); }
 
 proc_head:
     IDENTIFIER LB proc_head_declarations RB                                 { memory->setIdentifierToCurrentProcedure(*$1); }
@@ -134,14 +131,6 @@ value:
 void yyerror(std::string error) {
     printf("%s\n", error.c_str());
     exit(1);
-}
-
-void prepareProcedureExecutionVariable(Memory* memory, const std::string& name) {
-    if(procedureExecutionVariables == nullptr) {
-        procedureExecutionVariables = new std::vector<Variable*>();
-    }
-
-    procedureExecutionVariables->push_back(memory->getVariableFromMemory(name));
 }
 
 int parser_main(int argc, char** argv) {

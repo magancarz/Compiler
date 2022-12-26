@@ -20,6 +20,7 @@ public:
 	CodeGenerator(int argc, char** argv);
 	~CodeGenerator();
 
+	// functions to make differences in output code
 	void writeCode(const std::string& code);
 	void writeCode(const std::string& code, unsigned int value);
 	void changeCode(unsigned int codePosition, const std::string& code);
@@ -45,7 +46,7 @@ public:
 	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
 
 	unsigned int generateProcedureEndCode(Memory* memory, Procedure* procedure);
-	unsigned int executeProcedure(Memory* memory, const std::string& procedureName, std::vector<Variable*>* procedureExecutionVariables);
+	unsigned int executeProcedure(Memory* memory, const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables);
 
 	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
 	unsigned int ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length);

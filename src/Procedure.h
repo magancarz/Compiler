@@ -15,8 +15,8 @@ public:
 	void setCodeSize(unsigned int size) { m_codeSize = size; }
 	inline unsigned int getCodeSize() const { return m_codeSize; }
 
-	void addVariable(Variable* variable) { m_variables->push_back(variable); }
-	std::vector<Variable*>* getProcedureVariables() { return m_variables; }
+	void addVariable(Variable* variable) { m_variables.push_back(variable); }
+	std::vector<Variable*>& getProcedureVariables() { return m_variables; }
 	std::vector<Variable*>* getProcedurePointers();
 
 	inline unsigned int getProcedureStartPoint() { return m_procedureStartPoint; }
@@ -26,7 +26,7 @@ public:
 	void setProcedureEndingJumpPosition(unsigned int endingJumpPosition) { m_endingJumpPosition = endingJumpPosition; }
 
 private:
-	std::vector<Variable*>* m_variables = new std::vector<Variable*>();
+	std::vector<Variable*> m_variables;
 	
 	std::string m_name;
 	
