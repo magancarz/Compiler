@@ -45,10 +45,10 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 19 "src\\parser\\parser.ypp"
+#line 20 "src\\parser\\parser.ypp"
 
-#include "../Variable.h"
-#include "../CodeGenerator.h"
+    #include "../CodeGenerator.h"
+    #include "../Variable.h"
 
 #line 54 "src\\parser\\parser.tab.hpp"
 
@@ -105,7 +105,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 24 "src\\parser\\parser.ypp"
+#line 25 "src\\parser\\parser.ypp"
 
     unsigned int num;
     std::string* str;
