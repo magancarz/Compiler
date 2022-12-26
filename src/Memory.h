@@ -5,16 +5,30 @@
 #include "Variable.h"
 #include "Procedure.h"
 
-#define MEMORY_DEBUG 0
-
 class Memory {
 public:
 	Memory();
 	~Memory();
 
+	void initializeHelpingVariables();
+
+	void addVariableToMemory(unsigned int value);
 	void addVariableToMemory(const std::string& name, unsigned int value);
+	Variable* addPointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
 	Variable* addProcedureVariableToMemory(const std::string& name, bool isInProcedure);
-	Variable* addProcedurePointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
+	
+	Variable* getVariableFromMemory(unsigned int memoryPosition);
+	Variable* getVariableFromMemory(const std::string& name);
+
+	void changeVariableValue(unsigned int memoryPosition, unsigned int value);
+	void changeVariableValue(const std::string& name, unsigned int value);
+
+	bool checkIfVariableExists(const std::string& name);
+
+	Variable* findVariable(unsigned int memoryPosition);
+	Variable* findVariable(const std::string& name);
+	Variable* getValueHolder(unsigned int value);
+	Variable* getVariable(const std::string& name);
 	
 	void addNewProcedure();
 	void addVariableToProcedure(const std::string& name);
@@ -22,31 +36,18 @@ public:
 	Procedure* finishProcedure(unsigned int commandsSize);
 	void clearCurrentProcedure();
 
+	void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
+	inline std::vector<Variable*>& getProcedureExecutionVariables() { return m_procedureExecutionVariables; }
+	void clearProcedureExecutionVariables();
+	
 	void loadVariableToProcedureHead(const std::string& name);
-
-	void changeVariableValue(unsigned int memoryPosition, unsigned int value);
-	void changeVariableValue(const std::string& name, unsigned int value);
-
-	Variable* getVariableFromMemory(unsigned int memoryPosition);
-	Variable* getVariableFromMemory(const std::string& name);
-	Variable* getValueHolder(unsigned int value);
-
-	bool checkIfVariableExists(const std::string& name);
-
-	Variable* findVariable(unsigned int memoryPosition);
-	Variable* findVariable(const std::string& name);
-	Variable* getVariable(const std::string& name);
 
 	inline std::vector<Variable*>& getMemoryVariables() { return m_variables; }
 
 	inline std::vector<Procedure*>& getProcedures() { return m_procedures; }
 
-	void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
-	inline std::vector<Variable*>& getProcedureExecutionVariables() { return m_procedureExecutionVariables; }
-	void clearProcedureExecutionVariables();
-
 private:
-	unsigned int m_freeMemoryPointer = 1;
+	unsigned int m_freeMemoryPointer = 0;
 
 	std::vector<Variable*> m_variables;
 	
