@@ -57,9 +57,9 @@ procedures:
     | procedure                                                             
 
 procedure:
-    PROCEDURE proc_head IS VAR proc_head_declarations _BEGIN commands END   { codeGenerator->generateProcedureEndCode(memory, memory->finishProcedure($7));
+    PROCEDURE proc_head IS VAR proc_head_declarations _BEGIN commands END   { codeGenerator->generateProcedureEndCode(memory->finishProcedure($7));
                                                                               memory->clearCurrentProcedure(); }
-    | PROCEDURE proc_head IS _BEGIN commands END                            { codeGenerator->generateProcedureEndCode(memory, memory->finishProcedure($5));
+    | PROCEDURE proc_head IS _BEGIN commands END                            { codeGenerator->generateProcedureEndCode(memory->finishProcedure($5));
                                                                               memory->clearCurrentProcedure(); }
 
 main:
@@ -72,14 +72,14 @@ commands:
 
 command:
     %empty                                                                  
-    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(memory, *$1, $3) + $3; }
-    | IF condition THEN commands ELSE commands ENDIF                        { $$ = codeGenerator->ifElseCondition(memory, $2, $4, $6) + $4 + $6; }
-    | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition(memory, $2, $4) + $4; }
-    | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop(memory, $2, $4) + $4; }
-    | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop(memory, $4, $2) + $2; }
-    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(memory, *$1, memory->getProcedureExecutionVariables()); }
-    | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(memory, *$2); }
-    | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue(memory, $2); }
+    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(*$1, $3) + $3; }
+    | IF condition THEN commands ELSE commands ENDIF                        { $$ = codeGenerator->ifElseCondition($2, $4, $6) + $4 + $6; }
+    | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition($2, $4) + $4; }
+    | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop($2, $4) + $4; }
+    | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop($4, $2) + $2; }
+    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(*$1, memory->getProcedureExecutionVariables()); }
+    | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(*$2); }
+    | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue($2); }
 
 execute_proc_head:
     IDENTIFIER LB execute_proc_head_declarations RB                         
@@ -89,7 +89,7 @@ execute_proc_head_declarations:
     | execute_proc_head_declaration                                                 
     
 execute_proc_head_declaration:
-    IDENTIFIER                                                              { memory->prepareProcedureExecutionVariable(memory, *$1); }
+    IDENTIFIER                                                              { memory->prepareProcedureExecutionVariable(*$1); }
 
 proc_head:
     IDENTIFIER LB proc_head_declarations RB                                 { memory->setIdentifierToCurrentProcedure(*$1); }
@@ -109,20 +109,20 @@ declaration:
     IDENTIFIER                                                              { memory->addVariableToMemory(*$1, 0); }
 
 expression:
-    value                                                                   { $$ = codeGenerator->setValueToAccumulator(memory, $1); }
-    | value PLUS value                                                      { $$ = codeGenerator->add(memory, $1, $3); }
-    | value MINUS value                                                     { $$ = codeGenerator->sub(memory, $1, $3); }
-    | value MUL value                                                       { $$ = codeGenerator->mul(memory, $1, $3); }
-    | value DIV value                                                       { $$ = codeGenerator->div(memory, $1, $3); }
-    | value MOD value                                                       { $$ = codeGenerator->mod(memory, $1, $3); }
+    value                                                                   { $$ = codeGenerator->setValueToAccumulator($1); }
+    | value PLUS value                                                      { $$ = codeGenerator->add($1, $3); }
+    | value MINUS value                                                     { $$ = codeGenerator->sub($1, $3); }
+    | value MUL value                                                       { $$ = codeGenerator->mul($1, $3); }
+    | value DIV value                                                       { $$ = codeGenerator->div($1, $3); }
+    | value MOD value                                                       { $$ = codeGenerator->mod($1, $3); }
 
 condition:
-    value EQ value                                                          { $$ = codeGenerator->equal(memory, $1, $3); }
-    | value NEQ value                                                       { $$ = codeGenerator->nequal(memory, $1, $3); }
-    | value GREATER value                                                   { $$ = codeGenerator->greater(memory, $1, $3); }
-    | value LESS value                                                      { $$ = codeGenerator->less(memory, $1, $3); }
-    | value GREQ value                                                      { $$ = codeGenerator->greq(memory, $1, $3); }
-    | value LEQ value                                                       { $$ = codeGenerator->leq(memory, $1, $3); }
+    value EQ value                                                          { $$ = codeGenerator->equal($1, $3); }
+    | value NEQ value                                                       { $$ = codeGenerator->nequal($1, $3); }
+    | value GREATER value                                                   { $$ = codeGenerator->greater($1, $3); }
+    | value LESS value                                                      { $$ = codeGenerator->less($1, $3); }
+    | value GREQ value                                                      { $$ = codeGenerator->greq($1, $3); }
+    | value LEQ value                                                       { $$ = codeGenerator->leq($1, $3); }
 
 value:
     NUM                                                                     { $$ = memory->getValueHolder($1); }
@@ -136,8 +136,9 @@ void yyerror(std::string error) {
 }
 
 int parser_main(int argc, char** argv) {
-    codeGenerator = new CodeGenerator(argc, argv);
     memory = new Memory();
+    codeGenerator = new CodeGenerator(argc, argv);
+    codeGenerator->setMemoryPointer(memory);
 
     yyin = codeGenerator->getInput();
 

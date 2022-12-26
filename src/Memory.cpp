@@ -191,6 +191,6 @@ void Memory::clearProcedureExecutionVariables() {
 	m_procedureExecutionVariables.clear();
 }
 
-void Memory::prepareProcedureExecutionVariable(Memory* memory, const std::string& name) {
-	m_procedureExecutionVariables.push_back(memory->getVariableFromMemory(name));
+void Memory::prepareProcedureExecutionVariable(const std::string& name) {
+	m_procedureExecutionVariables.push_back(getVariableFromMemory(name));
 }

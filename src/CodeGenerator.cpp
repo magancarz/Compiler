@@ -16,10 +16,15 @@ CodeGenerator::~CodeGenerator() {
 	fclose(m_input);
 }
 
+void CodeGenerator::setMemoryPointer(Memory* memory) {
+	m_memory = memory;
+}
+
 void CodeGenerator::writeCode(const std::string& code) {
 	std::stringstream finalCode;
 	finalCode << code;
 	m_code.push_back(finalCode.str());
+
 	m_commandPointer++;
 }
 
@@ -49,33 +54,7 @@ void CodeGenerator::insertCode(unsigned int codePosition, const std::string& cod
 	finalCode << code;
 	m_code.insert(m_code.begin() + codePosition, finalCode.str());
 
-	// alter all JUMP, JPOS and JZERO code after inserted code position
-	for(int i = codePosition + 1; i < m_code.size(); i++) {
-		std::string codeToChange = m_code.at(i);
-		std::istringstream iss(codeToChange);
-		std::string starts, codeValue;
-		iss >> starts;
-		unsigned int jumpValue;
-		if(starts == "JUMP") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
-				changeCode(i, "JUMP", jumpValue + 1);
-			}
-		} else if(starts == "JPOS") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
-				changeCode(i, "JPOS", jumpValue + 1);
-			}
-		} else if(starts == "JZERO") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
-				changeCode(i, "JZERO", jumpValue + 1);
-			}
-		}
-	}
+	fixJumpCodeValues(codePosition);
 
 	m_commandPointer++;
 }
@@ -85,8 +64,14 @@ void CodeGenerator::insertCode(unsigned int codePosition, const std::string& cod
 	finalCode << code << " " << value;
 	m_code.insert(m_code.begin() + codePosition, finalCode.str());
 
-	// alter all JUMP, JPOS and JZERO code after inserted code position
-	for(int i = codePosition + 1; i < m_code.size(); i++) {
+	fixJumpCodeValues(codePosition);
+
+	m_commandPointer++;
+}
+
+void CodeGenerator::fixJumpCodeValues(unsigned int insertedCodePosition) {
+	// alter all JUMP, JPOS and JZERO calls that jump to position further than inserted code
+	for(int i = 0; i < m_code.size(); i++) {
 		std::string codeToChange = m_code.at(i);
 		std::istringstream iss(codeToChange);
 		std::string starts, codeValue;
@@ -95,30 +80,29 @@ void CodeGenerator::insertCode(unsigned int codePosition, const std::string& cod
 		if(starts == "JUMP") {
 			iss >> codeValue;
 			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
+			if(jumpValue >= insertedCodePosition) {
 				changeCode(i, "JUMP", jumpValue + 1);
 			}
 		} else if(starts == "JPOS") {
 			iss >> codeValue;
 			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
+			if(jumpValue >= insertedCodePosition) {
 				changeCode(i, "JPOS", jumpValue + 1);
 			}
 		} else if(starts == "JZERO") {
 			iss >> codeValue;
 			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= codePosition) {
+			if(jumpValue >= insertedCodePosition) {
 				changeCode(i, "JZERO", jumpValue + 1);
 			}
 		}
 	}
-
-	m_commandPointer++;
 }
 
-unsigned int CodeGenerator::addValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::addValueToAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	accumulator->setValue(accumulator->getValue() + variable->getValue());
 
 	writeCode("ADD", variable->getMemoryPosition());
@@ -126,9 +110,10 @@ unsigned int CodeGenerator::addValueToAccumulator(Memory* memory, Variable* vari
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::subValueFromAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::subValueFromAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	accumulator->setValue(accumulator->getValue() - variable->getValue());
 
 	writeCode("SUB", variable->getMemoryPosition());
@@ -136,51 +121,42 @@ unsigned int CodeGenerator::subValueFromAccumulator(Memory* memory, Variable* va
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::loadValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::loadValueToAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
+
 	unsigned int value = variable->getValue();
-	memory->changeVariableValue(0, value);
+	m_memory->changeVariableValue(0, value);
 
-	writeCode("LOAD", variable->getMemoryPosition());	
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d to accumulator.\n", value);
-	#endif
+	writeCode("LOAD", variable->getMemoryPosition());
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::setValueToAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
+
 	unsigned int value = variable->getValue();
-	memory->changeVariableValue(0, value);
-
-	if(variable->getName().empty()) {
-		writeCode("SET", value);	
-	} else {
-		writeCode("LOAD", variable->getMemoryPosition());
-	}
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d to accumulator.\n", value);
-	#endif
+	m_memory->changeVariableValue(0, value);
+	
+	writeCode("SET", value);
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::setValueToAccumulator(Memory* memory, unsigned int value) {
+unsigned int CodeGenerator::setValueToAccumulator(unsigned int value) {
 	unsigned int commandStart = m_commandPointer;
-	memory->changeVariableValue(0, value);
 
-	writeCode("SET", value);	
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d to accumulator.\n", value);
-	#endif
+	m_memory->changeVariableValue(0, value);
+
+	writeCode("SET", value);
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::storeValueFromAccumulator(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::storeValueFromAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	variable->setValue(accumulator->getValue());
 
 	writeCode("STORE", variable->getMemoryPosition());
@@ -188,9 +164,10 @@ unsigned int CodeGenerator::storeValueFromAccumulator(Memory* memory, Variable* 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::storeValueFromAccumulatorToPointedVariable(Memory* memory, Variable* pointer) {
+unsigned int CodeGenerator::storeValueFromAccumulatorToPointedVariable(Variable* pointer) {
 	unsigned int commandStart = m_commandPointer;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	pointer->getPointedVariable()->setValue(accumulator->getValue());
 
 	writeCode("STOREI", pointer->getPointedVariable()->getMemoryPosition());
@@ -198,47 +175,55 @@ unsigned int CodeGenerator::storeValueFromAccumulatorToPointedVariable(Memory* m
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, const std::string& value) {
+unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const std::string& value) {
 	unsigned int commandStart = m_commandPointer;
+
 	if(!value.empty()) {
 		unsigned int intValue = std::stoi(value);
-		assignValueToVariable(memory, name, intValue);
+		assignValueToVariable(name, intValue);
 	} else {
-		unsigned int val = 0;
-		assignValueToVariable(memory, name, val);
+		unsigned int intValue = 0;
+		assignValueToVariable(name, intValue);
 	}
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, unsigned int value) {
+unsigned int CodeGenerator::assignValueToVariable(const std::string& name, unsigned int value) {
 	unsigned int commandStart = m_commandPointer;
-	memory->changeVariableValue(name, value);
+
+	m_memory->changeVariableValue(name, value);
 	
-	unsigned int variableMemoryPointer = memory->getVariable(name)->getMemoryPosition();
+	unsigned int variableMemoryPointer = m_memory->getVariable(name)->getMemoryPosition();
 	writeCode("STORE", variableMemoryPointer);
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d to the variable named %s.\n", value, name.c_str());
-	#endif
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(Memory* memory, const std::string& name, Variable* variable) {
+unsigned int CodeGenerator::assignValueToVariable(const std::string& name, Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
+
 	unsigned int value = variable->getValue();
-	memory->changeVariableValue(name, value);
-	unsigned int variableMemoryPointer = memory->getVariable(name)->getMemoryPosition();
+	m_memory->changeVariableValue(name, value);
+	unsigned int variableMemoryPointer = m_memory->getVariable(name)->getMemoryPosition();
 	
 	writeCode("STORE", variableMemoryPointer);
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Assigned value %d to the variable named %s.\n", value, name.c_str());
-	#endif
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::generateProcedureEndCode(Memory* memory, Procedure* procedure) {
+unsigned int CodeGenerator::divideAccumulatorByHalf() {
+	unsigned int commandStart = m_commandPointer;
+
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
+	accumulator->setValue(accumulator->getValue() / 2);
+
+	divideAccumulatorByHalf();
+
+	return m_commandPointer - commandStart;
+}
+
+unsigned int CodeGenerator::generateProcedureEndCode(Procedure* procedure) {
 	unsigned int commandStart = m_commandPointer;
 	
 	procedure->setProcedureStartPoint(commandStart - procedure->getCodeSize());
@@ -247,8 +232,8 @@ unsigned int CodeGenerator::generateProcedureEndCode(Memory* memory, Procedure* 
 	for(Variable* variable : procedureVariables) {
 		if(variable->isPointer()) {
 			unsigned int pointedVariableMemoryPosition = variable->getPointedVariable()->getMemoryPosition();
-			loadValueToAccumulator(memory, variable);
-			storeValueFromAccumulatorToPointedVariable(memory, variable);
+			loadValueToAccumulator(variable);
+			storeValueFromAccumulatorToPointedVariable(variable);
 		}
 	}
 
@@ -259,11 +244,11 @@ unsigned int CodeGenerator::generateProcedureEndCode(Memory* memory, Procedure* 
 	return m_commandPointer - commandStart + procedure->getCodeSize();
 }
 
-unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables) {
+unsigned int CodeGenerator::executeProcedure(const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables) {
 	unsigned int commandStart = m_commandPointer;
 	
 	Procedure* procedure = nullptr;
-	std::vector<Procedure*>& procedures = memory->getProcedures();
+	std::vector<Procedure*>& procedures = m_memory->getProcedures();
 	for(Procedure* proc : procedures) {
 		if(proc->getName() == procedureName) {
 			procedure = proc;
@@ -278,14 +263,14 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 		for(std::vector<Variable*>::iterator it = procedurePointers->begin(); it != procedurePointers->end(); it++) {
 			Variable* pointer = *it;
 			Variable* procExecVar = procedureExecutionVariables[i];
-			setValueToAccumulator(memory, procExecVar->getMemoryPosition());
-			storeValueFromAccumulator(memory, pointer->getPointedVariable());
-			loadValueToAccumulator(memory, procExecVar);
-			storeValueFromAccumulator(memory, pointer);
+			setValueToAccumulator(procExecVar->getMemoryPosition());
+			storeValueFromAccumulator(pointer->getPointedVariable());
+			loadValueToAccumulator(procExecVar);
+			storeValueFromAccumulator(pointer);
 		}
 		
-		setValueToAccumulator(memory, m_commandPointer + 3);
-		storeValueFromAccumulator(memory, procedure->getProcedureVariables()[0]);
+		setValueToAccumulator(m_commandPointer + 3);
+		storeValueFromAccumulator(procedure->getProcedureVariables()[0]);
 		writeCode("JUMP", procedure->getProcedureStartPoint() + 1);
 		
 	} else {
@@ -293,14 +278,15 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 		exit(1);
 	}
 
-	memory->clearProcedureExecutionVariables();
+	m_memory->clearProcedureExecutionVariables();
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::ifCondition(Memory* memory, Condition* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::ifCondition(Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
+	// change value of "if false" jump in condition's code
 	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
 	std::istringstream iss(codeToChange);
 	std::string starts;
@@ -316,7 +302,7 @@ unsigned int CodeGenerator::ifCondition(Memory* memory, Condition* condition, un
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::ifElseCondition(Memory* memory, Condition* condition, unsigned int commands1Length, unsigned int commands2Length) {
+unsigned int CodeGenerator::ifElseCondition(Condition* condition, unsigned int commands1Length, unsigned int commands2Length) {
 	unsigned int commandStart = m_commandPointer;
 	insertCode(commandStart - commands2Length, "JUMP", commandStart + 1);
 	
@@ -337,7 +323,7 @@ unsigned int CodeGenerator::ifElseCondition(Memory* memory, Condition* condition
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::whileLoop(Memory* memory, Condition* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::whileLoop(Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
 	writeCode("JUMP", commandStart - commandsLength - condition->conditionCodeSize);
@@ -357,7 +343,7 @@ unsigned int CodeGenerator::whileLoop(Memory* memory, Condition* condition, unsi
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Condition* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::repeatUntilLoop(Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
 	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
@@ -375,16 +361,16 @@ unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Condition* condition
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::readValue(Memory* memory, const std::string& variableName) {
+unsigned int CodeGenerator::readValue(const std::string& variableName) {
 	unsigned int commandStart = m_commandPointer;
-	Variable* variable = memory->getVariable(variableName);
+	Variable* variable = m_memory->getVariable(variableName);
 
 	writeCode("GET", variable->getMemoryPosition());
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::printOutValue(Memory* memory, Variable* variable) {
+unsigned int CodeGenerator::printOutValue(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int variableMemoryPointer = variable->getMemoryPosition();
 	
@@ -392,472 +378,479 @@ unsigned int CodeGenerator::printOutValue(Memory* memory, Variable* variable) {
 		writeCode("PUT", variable->getValue());
 	else 
 		writeCode("PUT", variableMemoryPointer);
-	#if CODE_GENERATOR_DEBUG 1
-	printf("Printing out value assigned to variable %s", variable->getName().c_str());
-	#endif
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::add(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = aVal + bVal;
 
 	if(a->getName().empty() && b->getName().empty()) {
-		Variable* accumulator = memory->getVariableFromMemory(0);
-		setValueToAccumulator(memory, result);
+		Variable* accumulator = m_memory->getVariableFromMemory(0);
+		setValueToAccumulator(result);
+
 	} else if(a->getName().empty()) {
-		setValueToAccumulator(memory, a);
-		addValueToAccumulator(memory, b);
+		setValueToAccumulator(a);
+		addValueToAccumulator(b);
+
 	} else if(b->getName().empty()) {
-		setValueToAccumulator(memory, b);
-		addValueToAccumulator(memory, a);
+		setValueToAccumulator(b);
+		addValueToAccumulator(a);
+
 	} else {
-		loadValueToAccumulator(memory, a);
-		addValueToAccumulator(memory, b);
+		loadValueToAccumulator(a);
+		addValueToAccumulator(b);
+
 	}
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::sub(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::sub(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = bVal > aVal ? 0 : aVal - bVal;
 
 	if(a->getName().empty() && b->getName().empty()) {
-		Variable* accumulator = memory->getVariableFromMemory(0);
-		setValueToAccumulator(memory, result);
+		unsigned int aVal = a->getValue();
+		unsigned int bVal = b->getValue();
+		unsigned int result = bVal > aVal ? 0 : aVal - bVal;
+
+		Variable* accumulator = m_memory->getVariableFromMemory(0);
+		setValueToAccumulator(result);
+
 	} else if(a->getName().empty()) {
-		setValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
+		setValueToAccumulator(a);
+		subValueFromAccumulator(b);
+
 	} else if(b->getName().empty()) {
-		Variable* tempVariable = memory->getVariableFromMemory(1);
+		Variable* tempVariable = m_memory->getVariableFromMemory(1);
 		tempVariable->setValue(b->getValue());
-		setValueToAccumulator(memory, tempVariable);
-		writeCode("STORE", 1);
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, tempVariable);
+		setValueToAccumulator(tempVariable);
+		storeValueFromAccumulator(tempVariable);
+		loadValueToAccumulator(a);
+		subValueFromAccumulator(tempVariable);
+
 	} else {
-		loadValueToAccumulator(memory, a);
-		subValueFromAccumulator(memory, b);
+		loadValueToAccumulator(a);
+		subValueFromAccumulator(b);
+
 	}
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::mul(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::mul(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
+
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
-	unsigned int result = aVal * bVal;
 	
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		unsigned int result = aVal * bVal;
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* temp4Variable = memory->getVariableFromMemory(4);
-		Variable* temp5Variable = memory->getVariableFromMemory(5);
-		Variable* temp6Variable = memory->getVariableFromMemory(6);
-		Variable* oneVariable = memory->getVariableFromMemory(10);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
+		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
+		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
+		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
+		Variable* oneVariable = m_memory->getVariableFromMemory(7);
 		
 		// set up required variables
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
+			setValueToAccumulator(aVal);
 		} else {
-			loadValueToAccumulator(memory, a);
+			loadValueToAccumulator(a);
 		}
-		storeValueFromAccumulator(memory, temp1Variable);
+		storeValueFromAccumulator(temp1Variable);
 
 		// multiplier and remainder of multiplier
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
+			setValueToAccumulator(bVal);
 		} else {
-			loadValueToAccumulator(memory, b);
+			loadValueToAccumulator(b);
 		}
-		storeValueFromAccumulator(memory, temp2Variable);
+		storeValueFromAccumulator(temp2Variable);
 
-		subValueFromAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(temp1Variable);
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 7);
-		loadValueToAccumulator(memory, temp2Variable);
-		storeValueFromAccumulator(memory, temp3Variable);
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp2Variable);
-		loadValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp1Variable);
+		loadValueToAccumulator(temp2Variable);
+		storeValueFromAccumulator(temp3Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp2Variable);
+		loadValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp1Variable);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 
-		loadValueToAccumulator(memory, temp2Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp2Variable);
+		storeValueFromAccumulator(temp5Variable);
 		// current power of 2
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 
 		// result
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, temp6Variable);
+		setValueToAccumulator(zero);
+		storeValueFromAccumulator(temp6Variable);
 
 		// check if multiplier is 0 or 1
-		loadValueToAccumulator(memory, temp2Variable);
+		loadValueToAccumulator(temp2Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 38);
-		subValueFromAccumulator(memory, oneVariable);
+		subValueFromAccumulator(oneVariable);
 		writeCode("JPOS", jumpVariable + 5);
-		loadValueToAccumulator(memory, temp1Variable);
+		loadValueToAccumulator(temp1Variable);
 		writeCode("JUMP", jumpVariable + 38);
 
 		// start of the loop
 		unsigned int startOfTheMultiplyLoop = m_commandPointer;
 
 		// check if current value >= remainding multiplier
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp3Variable);
 		
 		// jump to position where we can check if value > or == remainding multiplier
 		unsigned int jumpToCheckRelation = m_commandPointer;
 		writeCode("JZERO", jumpToCheckRelation + 8);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(memory, temp3Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp3Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp4Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		// go back to the start of the loop
 		writeCode("JUMP", startOfTheMultiplyLoop);
 
-		loadValueToAccumulator(memory, temp3Variable);
-		subValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp3Variable);
+		subValueFromAccumulator(temp5Variable);
 
 		unsigned int jumpVariable1 = m_commandPointer;
 		writeCode("JZERO", jumpVariable1 + 18);
 
-		loadValueToAccumulator(memory, temp3Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp3Variable);
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp3Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp3Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp5Variable);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp4Variable);
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp4Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp4Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp6Variable);
 
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		writeCode("JUMP", startOfTheMultiplyLoop);
 		
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp6Variable);
 	}
 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::div(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::div(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
 
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* temp4Variable = memory->getVariableFromMemory(4);
-		Variable* temp5Variable = memory->getVariableFromMemory(5);
-		Variable* temp6Variable = memory->getVariableFromMemory(6);
-		Variable* oneVariable = memory->getVariableFromMemory(10);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
+		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
+		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
+		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
+		Variable* oneVariable = m_memory->getVariableFromMemory(7);
 
 		// set up required variables
 		// multiplicand and current power of 2 multiplicand equivalent
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
+			setValueToAccumulator(aVal);
 		} else {
-			loadValueToAccumulator(memory, a);
+			loadValueToAccumulator(a);
 		}
-		storeValueFromAccumulator(memory, temp2Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		storeValueFromAccumulator(temp2Variable);
+		storeValueFromAccumulator(temp5Variable);
 
 		// multiplier and remainder of multiplier
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
+			setValueToAccumulator(bVal);
 		} else {
-			loadValueToAccumulator(memory, b);
+			loadValueToAccumulator(b);
 		}
-		storeValueFromAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 		
 		// current power of 2
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 		
 		// result
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, temp6Variable);
+		setValueToAccumulator(zero);
+		storeValueFromAccumulator(temp6Variable);
 
 		// check if divisor is 0 or bigger than dividend
-		loadValueToAccumulator(memory, temp1Variable);
+		loadValueToAccumulator(temp1Variable);
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 54);
-		subValueFromAccumulator(memory, temp2Variable);
+		subValueFromAccumulator(temp2Variable);
 		writeCode("JZERO", jumpVariable + 5);
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 		writeCode("JPOS", jumpVariable + 54);
 
 		// start of the loop
 		unsigned int startOfTheMultiplyLoop = m_commandPointer;
 
 		// check if current value >= remainding multiplier
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
 		
 		// jump to position where we can check if value > or == remainding multiplier
 		jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 8);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(memory, temp3Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp3Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp4Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		// go back to the start of the loop
 		writeCode("JUMP", startOfTheMultiplyLoop);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		subValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp4Variable);
+		subValueFromAccumulator(temp5Variable);
 
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 31);
 		
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp5Variable);
 
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp6Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JUMP", jumpVariable + 31);
 
 		unsigned int addToResultJumpPosition = m_commandPointer;
-		loadValueToAccumulator(memory, temp4Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp4Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp4Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 3);
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp5Variable);
 
-		loadValueToAccumulator(memory, temp3Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp3Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp3Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 3);
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp6Variable);
 
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		writeCode("JUMP", startOfTheMultiplyLoop);
 		
-		loadValueToAccumulator(memory, temp3Variable);
-		subValueFromAccumulator(memory, oneVariable);
+		loadValueToAccumulator(temp3Variable);
+		subValueFromAccumulator(oneVariable);
 		jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 5);
 		writeCode("JUMP", addToResultJumpPosition);
 
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp6Variable);
 
-		loadValueToAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
 	}
 	 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
+unsigned int CodeGenerator::mod(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
 
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
-		Variable* temp3Variable = memory->getVariableFromMemory(3);
-		Variable* temp4Variable = memory->getVariableFromMemory(4);
-		Variable* temp5Variable = memory->getVariableFromMemory(5);
-		Variable* temp6Variable = memory->getVariableFromMemory(6);
-		Variable* oneVariable = memory->getVariableFromMemory(10);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
+		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
+		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
+		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
+		Variable* oneVariable = m_memory->getVariableFromMemory(7);
 
 		// set up required variables
 		// multiplicand and current power of 2 multiplicand equivalent
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
+			setValueToAccumulator(aVal);
 		} else {
-			loadValueToAccumulator(memory, a);
+			loadValueToAccumulator(a);
 		}
-		storeValueFromAccumulator(memory, temp2Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		storeValueFromAccumulator(temp2Variable);
+		storeValueFromAccumulator(temp5Variable);
 
 		// multiplier and remainder of multiplier
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
+			setValueToAccumulator(bVal);
 		} else {
-			loadValueToAccumulator(memory, b);
+			loadValueToAccumulator(b);
 		}
-		storeValueFromAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		storeValueFromAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 		
 		// current power of 2
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 		
 		// result
-		setValueToAccumulator(memory, zero);
-		storeValueFromAccumulator(memory, temp6Variable);
+		setValueToAccumulator(zero);
+		storeValueFromAccumulator(temp6Variable);
 
 		// check if divisor is 0 or bigger than dividend
-		loadValueToAccumulator(memory, temp1Variable);
+		loadValueToAccumulator(temp1Variable);
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 54);
-		subValueFromAccumulator(memory, temp2Variable);
+		subValueFromAccumulator(temp2Variable);
 		writeCode("JZERO", jumpVariable + 5);
-		loadValueToAccumulator(memory, temp2Variable);
+		loadValueToAccumulator(temp2Variable);
 		writeCode("JPOS", jumpVariable + 54);
 
 		// start of the loop
 		unsigned int startOfTheMultiplyLoop = m_commandPointer;
 
 		// check if current value >= remainding multiplier
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
 		
 		// jump to position where we can check if value > or == remainding multiplier
 		jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 8);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(memory, temp3Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp3Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp4Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		// go back to the start of the loop
 		writeCode("JUMP", startOfTheMultiplyLoop);
 
-		loadValueToAccumulator(memory, temp4Variable);
-		subValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp4Variable);
+		subValueFromAccumulator(temp5Variable);
 
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 31);
 		
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp5Variable);
 
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp6Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JUMP", jumpVariable + 31);
 
 		unsigned int addToResultJumpPosition = m_commandPointer;
-		loadValueToAccumulator(memory, temp4Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp4Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp4Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 3);
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
-		loadValueToAccumulator(memory, temp5Variable);
-		subValueFromAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
+		loadValueToAccumulator(temp5Variable);
+		subValueFromAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp5Variable);
 
-		loadValueToAccumulator(memory, temp3Variable);
-		writeCode("HALF");
-		storeValueFromAccumulator(memory, temp3Variable);
+		loadValueToAccumulator(temp3Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp3Variable);
 		jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 3);
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp3Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp3Variable);
+		storeValueFromAccumulator(temp6Variable);
 
-		setValueToAccumulator(memory, 1);
-		storeValueFromAccumulator(memory, temp3Variable);
+		setValueToAccumulator(1);
+		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		storeValueFromAccumulator(memory, temp4Variable);
+		loadValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp4Variable);
 
 		writeCode("JUMP", startOfTheMultiplyLoop);
 		
-		loadValueToAccumulator(memory, temp3Variable);
-		subValueFromAccumulator(memory, oneVariable);
+		loadValueToAccumulator(temp3Variable);
+		subValueFromAccumulator(oneVariable);
 		jumpVariable = m_commandPointer;
 		writeCode("JZERO", jumpVariable + 5);
 		writeCode("JUMP", addToResultJumpPosition);
 
-		loadValueToAccumulator(memory, temp6Variable);
-		addValueToAccumulator(memory, temp4Variable);
-		storeValueFromAccumulator(memory, temp6Variable);
+		loadValueToAccumulator(temp6Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp6Variable);
 
-		loadValueToAccumulator(memory, temp5Variable);
+		loadValueToAccumulator(temp5Variable);
 	}
 
 	return m_commandPointer - commandStart;
 }
 
-Condition* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -865,36 +858,36 @@ Condition* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition, jumpIfFalsePosition2, jumpIfTruePosition;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
-			storeValueFromAccumulator(memory, temp1Variable);
+			setValueToAccumulator(aVal);
+			storeValueFromAccumulator(temp1Variable);
 		} else {
-			loadValueToAccumulator(memory, a);
-			storeValueFromAccumulator(memory, temp1Variable);
+			loadValueToAccumulator(a);
+			storeValueFromAccumulator(temp1Variable);
 		}
 
 		// multiplier and remainder of multiplier
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
-			storeValueFromAccumulator(memory, temp2Variable);
+			setValueToAccumulator(bVal);
+			storeValueFromAccumulator(temp2Variable);
 		} else {
-			loadValueToAccumulator(memory, b);
-			storeValueFromAccumulator(memory, temp2Variable);
+			loadValueToAccumulator(b);
+			storeValueFromAccumulator(temp2Variable);
 		}
 
-		subValueFromAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(temp1Variable);
 		unsigned int jumpVariable = m_commandPointer;
 		writeCode("JPOS", jumpVariable + 5);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		subValueFromAccumulator(memory, temp2Variable);
+		loadValueToAccumulator(temp1Variable);
+		subValueFromAccumulator(temp2Variable);
 		
 		writeCode("JPOS", jumpVariable + 5);
 		
@@ -909,7 +902,7 @@ Condition* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 	return condition;
 }
 
-Condition* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::nequal(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -917,51 +910,51 @@ Condition* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
-			storeValueFromAccumulator(memory, temp1Variable);
+			setValueToAccumulator(aVal);
+			storeValueFromAccumulator(temp1Variable);
 		} else {
-			loadValueToAccumulator(memory, a);
-			storeValueFromAccumulator(memory, temp1Variable);
+			loadValueToAccumulator(a);
+			storeValueFromAccumulator(temp1Variable);
 		}
 
 		// multiplier and remainder of multiplier
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
-			storeValueFromAccumulator(memory, temp2Variable);
+			setValueToAccumulator(bVal);
+			storeValueFromAccumulator(temp2Variable);
 		} else {
-			loadValueToAccumulator(memory, b);
-			storeValueFromAccumulator(memory, temp2Variable);
+			loadValueToAccumulator(b);
+			storeValueFromAccumulator(temp2Variable);
 		}
 
-		subValueFromAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(temp1Variable);
 		unsigned int jumpPosition = m_commandPointer;
 		writeCode("JPOS", jumpPosition + 6);
 
-		loadValueToAccumulator(memory, temp1Variable);
-		subValueFromAccumulator(memory, temp2Variable);
+		loadValueToAccumulator(temp1Variable);
+		subValueFromAccumulator(temp2Variable);
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JPOS", jumpIfTruePosition + 3);
 		
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 		jumpIfFalsePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfFalsePosition + 2);
 		
-		setValueToAccumulator(memory, 1);
+		setValueToAccumulator(1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Condition* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -969,41 +962,41 @@ Condition* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
-			storeValueFromAccumulator(memory, temp2Variable);
+			setValueToAccumulator(bVal);
+			storeValueFromAccumulator(temp2Variable);
 		} else {
-			loadValueToAccumulator(memory, b);
-			storeValueFromAccumulator(memory, temp2Variable);
+			loadValueToAccumulator(b);
+			storeValueFromAccumulator(temp2Variable);
 		}
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
+			setValueToAccumulator(aVal);
 		} else {
-			loadValueToAccumulator(memory, a);
+			loadValueToAccumulator(a);
 		}
 
-		subValueFromAccumulator(memory, temp2Variable);
+		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
 		writeCode("JZERO", jumpIfFalsePosition + 3);
-		setValueToAccumulator(memory, 1);
+		setValueToAccumulator(1);
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Condition* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::less(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1011,41 +1004,41 @@ Condition* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
-			storeValueFromAccumulator(memory, temp2Variable);
+			setValueToAccumulator(aVal);
+			storeValueFromAccumulator(temp2Variable);
 		} else {
-			loadValueToAccumulator(memory, a);
-			storeValueFromAccumulator(memory, temp2Variable);
+			loadValueToAccumulator(a);
+			storeValueFromAccumulator(temp2Variable);
 		}
 
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
+			setValueToAccumulator(bVal);
 		} else {
-			loadValueToAccumulator(memory, b);
+			loadValueToAccumulator(b);
 		}
 
-		subValueFromAccumulator(memory, temp2Variable);
+		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
 		writeCode("JZERO", jumpIfFalsePosition + 3);
-		setValueToAccumulator(memory, 1);
+		setValueToAccumulator(1);
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Condition* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::greq(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1053,41 +1046,41 @@ Condition* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
-			storeValueFromAccumulator(memory, temp1Variable);
+			setValueToAccumulator(aVal);
+			storeValueFromAccumulator(temp1Variable);
 		} else {
-			loadValueToAccumulator(memory, a);
-			storeValueFromAccumulator(memory, temp1Variable);
+			loadValueToAccumulator(a);
+			storeValueFromAccumulator(temp1Variable);
 		}
 		
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
+			setValueToAccumulator(bVal);
 		} else {
-			loadValueToAccumulator(memory, b);
+			loadValueToAccumulator(b);
 		}
 		
-		subValueFromAccumulator(memory, temp1Variable);
+		subValueFromAccumulator(temp1Variable);
 		jumpIfFalsePosition = m_commandPointer;
 		writeCode("JPOS", jumpIfFalsePosition + 3);
-		setValueToAccumulator(memory, 1);
+		setValueToAccumulator(1);
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Condition* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::leq(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1095,33 +1088,33 @@ Condition* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 
 	unsigned int jumpIfFalsePosition = 0, jumpIfTruePosition = 0;
 	unsigned int zero = 0;
-	Variable* accumulator = memory->getVariableFromMemory(0);
+	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(memory, result);
+		setValueToAccumulator(result);
 	} else {
-		Variable* temp1Variable = memory->getVariableFromMemory(1);
-		Variable* temp2Variable = memory->getVariableFromMemory(2);
+		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
+		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
 
 		if(b->getName().empty()) {
-			setValueToAccumulator(memory, bVal);
-			storeValueFromAccumulator(memory, temp2Variable);
+			setValueToAccumulator(bVal);
+			storeValueFromAccumulator(temp2Variable);
 		} else {
-			loadValueToAccumulator(memory, b);
-			storeValueFromAccumulator(memory, temp2Variable);
+			loadValueToAccumulator(b);
+			storeValueFromAccumulator(temp2Variable);
 		}
 
 		if(a->getName().empty()) {
-			setValueToAccumulator(memory, aVal);
+			setValueToAccumulator(aVal);
 		} else {
-			loadValueToAccumulator(memory, a);
+			loadValueToAccumulator(a);
 		}
 		
-		subValueFromAccumulator(memory, temp2Variable);
+		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
 		writeCode("JPOS", jumpIfFalsePosition + 3);
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(memory, zero);
+		setValueToAccumulator(zero);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};

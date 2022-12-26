@@ -36,7 +36,7 @@ public:
 	Procedure* finishProcedure(unsigned int commandsSize);
 	void clearCurrentProcedure();
 
-	void prepareProcedureExecutionVariable(Memory* memory, const std::string& name);
+	void prepareProcedureExecutionVariable(const std::string& name);
 	inline std::vector<Variable*>& getProcedureExecutionVariables() { return m_procedureExecutionVariables; }
 	void clearProcedureExecutionVariables();
 	

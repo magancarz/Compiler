@@ -19,55 +19,60 @@ class CodeGenerator {
 public:
 	CodeGenerator(int argc, char** argv);
 	~CodeGenerator();
+	
+	void setMemoryPointer(Memory* memory);
 
 	// functions to make differences in output code
 	void writeCode(const std::string& code);
 	void writeCode(const std::string& code, unsigned int value);
 	void changeCode(unsigned int codePosition, const std::string& code);
 	void changeCode(unsigned int codePosition, const std::string& code, unsigned int value);
+	void fixJumpCodeValues(unsigned int insertedCodePosition);
 	void insertCode(unsigned int codePosition, const std::string& code);
 	void insertCode(unsigned int codePosition, const std::string& code, unsigned int value);
 
 	// code generating functions
+	unsigned int addValueToAccumulator(Variable* variable);
+	unsigned int subValueFromAccumulator(Variable* variable);
 
-	unsigned int addValueToAccumulator(Memory* memory, Variable* variable);
-	unsigned int subValueFromAccumulator(Memory* memory, Variable* variable);
+	unsigned int loadValueToAccumulator(Variable* variable);
 
-	unsigned int loadValueToAccumulator(Memory* memory, Variable* variable);
+	unsigned int setValueToAccumulator(Variable* variable);
+	unsigned int setValueToAccumulator(unsigned int value);
 
-	unsigned int setValueToAccumulator(Memory* memory, Variable* variable);
-	unsigned int setValueToAccumulator(Memory* memory, unsigned int value);
+	unsigned int storeValueFromAccumulator(Variable* variable);
+	unsigned int storeValueFromAccumulatorToPointedVariable(Variable* pointer);
 
-	unsigned int storeValueFromAccumulator(Memory* memory, Variable* variable);
-	unsigned int storeValueFromAccumulatorToPointedVariable(Memory* memory, Variable* pointer);
+	unsigned int assignValueToVariable(const std::string& name, const std::string& value);
+	unsigned int assignValueToVariable(const std::string& name, unsigned int value);
+	unsigned int assignValueToVariable(const std::string& name, Variable* variable);
 
-	unsigned int assignValueToVariable(Memory* memory, const std::string& name, const std::string& value);
-	unsigned int assignValueToVariable(Memory* memory, const std::string& name, unsigned int value);
-	unsigned int assignValueToVariable(Memory* memory, const std::string& name, Variable* variable);
-
-	unsigned int generateProcedureEndCode(Memory* memory, Procedure* procedure);
-	unsigned int executeProcedure(Memory* memory, const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables);
-
-	unsigned int ifCondition(Memory* memory, Condition* condition, unsigned int commandsLength);
-	unsigned int ifElseCondition(Memory* memory, Condition* condition, unsigned int commands1Length, unsigned int commands2Length);
-	unsigned int whileLoop(Memory* memory, Condition* condition, unsigned int commandsLength);
-	unsigned int repeatUntilLoop(Memory* memory, Condition* condition, unsigned int commandsLength);
-
-	unsigned int readValue(Memory* memory, const std::string& variableName);
-	unsigned int printOutValue(Memory* memory, Variable* variable);
-
-	unsigned int add(Memory* memory, Variable* a, Variable* b);
-	unsigned int sub(Memory* memory, Variable* a, Variable* b);
-	unsigned int mul(Memory* memory, Variable* a, Variable* b);
-	unsigned int div(Memory* memory, Variable* a, Variable* b);
-	unsigned int mod(Memory* memory, Variable* a, Variable* b);
+	unsigned int readValue(const std::string& variableName);
+	unsigned int printOutValue(Variable* variable);
 	
-	Condition* equal(Memory* memory, Variable* a, Variable* b);
-	Condition* nequal(Memory* memory, Variable* a, Variable* b);
-	Condition* greater(Memory* memory, Variable* a, Variable* b);
-	Condition* less(Memory* memory, Variable* a, Variable* b);
-	Condition* greq(Memory* memory, Variable* a, Variable* b);
-	Condition* leq(Memory* memory, Variable* a, Variable* b);
+	unsigned int divideAccumulatorByHalf();
+
+	unsigned int generateProcedureEndCode(Procedure* procedure);
+	unsigned int executeProcedure(const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables);
+
+	unsigned int ifCondition(Condition* condition, unsigned int commandsLength);
+	unsigned int ifElseCondition(Condition* condition, unsigned int commands1Length, unsigned int commands2Length);
+	unsigned int whileLoop(Condition* condition, unsigned int commandsLength);
+	unsigned int repeatUntilLoop(Condition* condition, unsigned int commandsLength);
+
+
+	unsigned int add(Variable* a, Variable* b);
+	unsigned int sub(Variable* a, Variable* b);
+	unsigned int mul(Variable* a, Variable* b);
+	unsigned int div(Variable* a, Variable* b);
+	unsigned int mod(Variable* a, Variable* b);
+	
+	Condition* equal(Variable* a, Variable* b);
+	Condition* nequal(Variable* a, Variable* b);
+	Condition* greater(Variable* a, Variable* b);
+	Condition* less(Variable* a, Variable* b);
+	Condition* greq(Variable* a, Variable* b);
+	Condition* leq(Variable* a, Variable* b);
 	
 	std::string getCode();
 
@@ -76,6 +81,8 @@ public:
 private:
 	FILE* m_input;
 	std::ofstream m_output;
+
+	Memory* m_memory;
 
 	std::vector<std::string> m_code;
 
