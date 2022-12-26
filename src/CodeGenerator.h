@@ -9,7 +9,7 @@
 #define CODE_GENERATOR_DEBUG 0
 #define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
 
-struct Cond {
+struct Condition {
 	unsigned int conditionCodeSize;
 	unsigned int jumpIfTruePosition;
 	unsigned int jumpIfFalsePosition;
@@ -48,10 +48,10 @@ public:
 	unsigned int generateProcedureEndCode(Memory* memory, Procedure* procedure);
 	unsigned int executeProcedure(Memory* memory, const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables);
 
-	unsigned int ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength);
-	unsigned int ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length);
-	unsigned int whileLoop(Memory* memory, Cond* condition, unsigned int commandsLength);
-	unsigned int repeatUntilLoop(Memory* memory, Cond* condition, unsigned int commandsLength);
+	unsigned int ifCondition(Memory* memory, Condition* condition, unsigned int commandsLength);
+	unsigned int ifElseCondition(Memory* memory, Condition* condition, unsigned int commands1Length, unsigned int commands2Length);
+	unsigned int whileLoop(Memory* memory, Condition* condition, unsigned int commandsLength);
+	unsigned int repeatUntilLoop(Memory* memory, Condition* condition, unsigned int commandsLength);
 
 	unsigned int readValue(Memory* memory, const std::string& variableName);
 	unsigned int printOutValue(Memory* memory, Variable* variable);
@@ -62,12 +62,12 @@ public:
 	unsigned int div(Memory* memory, Variable* a, Variable* b);
 	unsigned int mod(Memory* memory, Variable* a, Variable* b);
 	
-	Cond* equal(Memory* memory, Variable* a, Variable* b);
-	Cond* nequal(Memory* memory, Variable* a, Variable* b);
-	Cond* greater(Memory* memory, Variable* a, Variable* b);
-	Cond* less(Memory* memory, Variable* a, Variable* b);
-	Cond* greq(Memory* memory, Variable* a, Variable* b);
-	Cond* leq(Memory* memory, Variable* a, Variable* b);
+	Condition* equal(Memory* memory, Variable* a, Variable* b);
+	Condition* nequal(Memory* memory, Variable* a, Variable* b);
+	Condition* greater(Memory* memory, Variable* a, Variable* b);
+	Condition* less(Memory* memory, Variable* a, Variable* b);
+	Condition* greq(Memory* memory, Variable* a, Variable* b);
+	Condition* leq(Memory* memory, Variable* a, Variable* b);
 	
 	std::string getCode();
 

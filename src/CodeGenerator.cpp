@@ -298,7 +298,7 @@ unsigned int CodeGenerator::executeProcedure(Memory* memory, const std::string& 
 	return m_commandPointer - commandStart;
 }
 
-unsigned int CodeGenerator::ifCondition(Memory* memory, Cond* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::ifCondition(Memory* memory, Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
 	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
@@ -316,7 +316,7 @@ unsigned int CodeGenerator::ifCondition(Memory* memory, Cond* condition, unsigne
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::ifElseCondition(Memory* memory, Cond* condition, unsigned int commands1Length, unsigned int commands2Length) {
+unsigned int CodeGenerator::ifElseCondition(Memory* memory, Condition* condition, unsigned int commands1Length, unsigned int commands2Length) {
 	unsigned int commandStart = m_commandPointer;
 	insertCode(commandStart - commands2Length, "JUMP", commandStart + 1);
 	
@@ -337,7 +337,7 @@ unsigned int CodeGenerator::ifElseCondition(Memory* memory, Cond* condition, uns
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::whileLoop(Memory* memory, Cond* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::whileLoop(Memory* memory, Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
 	writeCode("JUMP", commandStart - commandsLength - condition->conditionCodeSize);
@@ -357,7 +357,7 @@ unsigned int CodeGenerator::whileLoop(Memory* memory, Cond* condition, unsigned 
 	return m_commandPointer - commandStart + condition->conditionCodeSize;
 }
 
-unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Cond* condition, unsigned int commandsLength) {
+unsigned int CodeGenerator::repeatUntilLoop(Memory* memory, Condition* condition, unsigned int commandsLength) {
 	unsigned int commandStart = m_commandPointer;
 
 	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
@@ -857,7 +857,7 @@ unsigned int CodeGenerator::mod(Memory* memory, Variable* a, Variable* b) {
 	return m_commandPointer - commandStart;
 }
 
-Cond* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -905,11 +905,11 @@ Cond* CodeGenerator::equal(Memory* memory, Variable* a, Variable* b) {
 		writeCode("JUMP", jumpIfFalsePosition);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Cond* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -957,11 +957,11 @@ Cond* CodeGenerator::nequal(Memory* memory, Variable* a, Variable* b) {
 		setValueToAccumulator(memory, 1);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Cond* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -999,11 +999,11 @@ Cond* CodeGenerator::greater(Memory* memory, Variable* a, Variable* b) {
 		setValueToAccumulator(memory, zero);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Cond* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1041,11 +1041,11 @@ Cond* CodeGenerator::less(Memory* memory, Variable* a, Variable* b) {
 		setValueToAccumulator(memory, zero);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Cond* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1083,11 +1083,11 @@ Cond* CodeGenerator::greq(Memory* memory, Variable* a, Variable* b) {
 		setValueToAccumulator(memory, zero);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 
-Cond* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
+Condition* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
@@ -1124,7 +1124,7 @@ Cond* CodeGenerator::leq(Memory* memory, Variable* a, Variable* b) {
 		setValueToAccumulator(memory, zero);
 	}
 
-	Cond* condition = new Cond{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
 	return condition;
 }
 

@@ -25,7 +25,7 @@ void yyerror(std::string error);
     unsigned int num;
     std::string* str;
     Variable* var;
-    Cond* condit;
+    Condition* condit;
 }
 
 %token PROCEDURE PROGRAM IS VAR _BEGIN END

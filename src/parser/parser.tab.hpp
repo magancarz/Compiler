@@ -110,7 +110,7 @@ union YYSTYPE
     unsigned int num;
     std::string* str;
     Variable* var;
-    Cond* condit;
+    Condition* condit;
 
 #line 116 "src\\parser\\parser.tab.hpp"
 
