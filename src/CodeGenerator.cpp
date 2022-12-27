@@ -347,11 +347,9 @@ unsigned int CodeGenerator::printOutValue(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int variableMemoryPointer = variable->getMemoryPosition();
 	
-	if(variable->getName().empty() && variable->getValue() == 1) {
-		writeCode("PUT", 7);
-		return m_commandPointer - commandStart;
-	} else if(variable->getName().empty() && variable->getValue() == 0) {
-		writeCode("PUT", 8);
+	if(variable->getName().empty()) {
+		setValueToAccumulator(variable->getValue());
+		writeCode("PUT", 0);
 		return m_commandPointer - commandStart;
 	}
 
