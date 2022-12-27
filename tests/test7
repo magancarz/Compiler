@@ -1,0 +1,17 @@
+PROGRAM IS
+VAR a, b
+BEGIN
+	READ a;
+	b := a;
+	a := a / 4;
+	WRITE a;
+
+	a := a * 4;
+	WRITE a;
+
+	a := a + 4;
+	WRITE a;
+
+	a := a - 4;
+	WRITE a;
+END

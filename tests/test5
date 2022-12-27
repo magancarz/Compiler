@@ -6,9 +6,9 @@ BEGIN
 		p := n / 2;
 		p := 2 * p;
 		IF n > p THEN
-			WRITE 10;
+			WRITE 7;
 		ELSE
-			WRITE 9;
+			WRITE 8;
 		ENDIF
 		n := n / 2;
 	UNTIL n = 0;

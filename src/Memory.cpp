@@ -6,7 +6,10 @@ Memory::Memory() {
 }
 
 Memory::~Memory() {
-	
+	for(auto v : m_variables) {
+		delete v;
+	}
+	m_variables.clear();
 }
 
 void Memory::initializeHelpingVariables() {
@@ -19,6 +22,9 @@ void Memory::initializeHelpingVariables() {
 	addVariableToMemory(0);
 	addVariableToMemory(0);
 	addVariableToMemory(0);
+	addVariableToMemory(0);
+
+	// "zero" value holder
 	addVariableToMemory(0);
 
 	// "one" value holder
@@ -49,6 +55,7 @@ Variable* Memory::addProcedureVariableToMemory(const std::string& name, bool isI
 	}
 
 	Variable* newVariable = new Variable(true, name, m_freeMemoryPointer);
+	newVariable->setParentProcedureName(m_currentProcedure->getName());
 	m_variables.push_back(newVariable);
 	m_freeMemoryPointer++;
 
@@ -85,7 +92,7 @@ void Memory::addVariableToProcedure(const std::string& name) {
 		addNewProcedure();
 	}
 	
-	// if the name is empty -> add variable as pointer
+	// if the name is empty, then add variable as pointer
 	if(m_currentProcedure->getName().empty()) {
 		m_currentProcedure->getProcedureVariables().push_back(addPointerToMemory(name, true, nullptr));
 		return;
@@ -98,6 +105,10 @@ void Memory::addVariableToProcedure(const std::string& name) {
 void Memory::setIdentifierToCurrentProcedure(const std::string& name) {
 	if(m_currentProcedure == nullptr) {
 		addNewProcedure();
+	}
+
+	for(Variable* var : m_currentProcedure->getProcedureVariables()) {
+		var->setParentProcedureName(name);
 	}
 
 	m_currentProcedure->setProcedureName(name);
@@ -172,7 +183,7 @@ Variable* Memory::getVariable(const std::string& name) {
 		// if we are adding new procedure, then avoid checking regular
 		// variable names, similarly avoid procedure variables when we are looking for a regular variable
 		if(m_currentProcedure != nullptr) {
-			if(variableName == name && variable->isInProcedure()) {
+			if(variableName == name && variable->isInProcedure() && variable->getParentProcedureName() == m_currentProcedure->getName()) {
 				return variable;
 			}
 		} else {
@@ -185,12 +196,33 @@ Variable* Memory::getVariable(const std::string& name) {
 	return nullptr;
 }
 
+void Memory::prepareProcedureExecutionVariable(const std::string& name) {
+	//m_procedureExecutionVariablesNames.push_back(name);
+	m_procedureExecutionVariables.push_back(getVariableFromMemory(name));
+}
+
+//void Memory::setExecutedProcedureIdentifier(const std::string& name) {
+//	m_executedProcedureIdentifier = name;
+//}
+
+std::vector<Variable*>& Memory::getProcedureExecutionVariables() {
+	/*for(std::string name : m_procedureExecutionVariablesNames) {
+		for(Variable* variable : m_variables) {
+			std::string variableName = variable->getName();
+
+			if(variableName == name && variable->getParentProcedureName() == m_executedProcedureIdentifier) {
+				m_procedureExecutionVariables.push_back(variable);
+			}
+		}
+	}*/
+
+	return m_procedureExecutionVariables;
+}
+
 void Memory::clearProcedureExecutionVariables() {
 	// we don't need to delete pointers inside of vector,
 	// because we are still using them
 	m_procedureExecutionVariables.clear();
-}
-
-void Memory::prepareProcedureExecutionVariable(const std::string& name) {
-	m_procedureExecutionVariables.push_back(getVariableFromMemory(name));
+	//m_procedureExecutionVariablesNames.clear();
+	//m_executedProcedureIdentifier = "";
 }

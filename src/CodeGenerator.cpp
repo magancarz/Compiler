@@ -9,7 +9,7 @@ CodeGenerator::CodeGenerator(int argc, char** argv) {
 
 	// initialize temp variables
 	writeCode("SET", 1);
-	writeCode("STORE", 10);
+	writeCode("STORE", 7);
 }
 
 CodeGenerator::~CodeGenerator() {
@@ -71,7 +71,7 @@ void CodeGenerator::insertCode(unsigned int codePosition, const std::string& cod
 
 void CodeGenerator::fixJumpCodeValues(unsigned int insertedCodePosition) {
 	// alter all JUMP, JPOS and JZERO calls that jump to position further than inserted code
-	for(int i = 0; i < m_code.size(); i++) {
+	for(int i = insertedCodePosition + 1; i < m_code.size(); i++) {
 		std::string codeToChange = m_code.at(i);
 		std::istringstream iss(codeToChange);
 		std::string starts, codeValue;
@@ -218,7 +218,7 @@ unsigned int CodeGenerator::divideAccumulatorByHalf() {
 	Variable* accumulator = m_memory->getVariableFromMemory(0);
 	accumulator->setValue(accumulator->getValue() / 2);
 
-	divideAccumulatorByHalf();
+	writeCode("HALF");
 
 	return m_commandPointer - commandStart;
 }
@@ -239,6 +239,7 @@ unsigned int CodeGenerator::generateProcedureEndCode(Procedure* procedure) {
 
 	writeCode("JUMPI", procedure->getProcedureVariables()[0]->getMemoryPosition());
 	procedure->setProcedureEndingJumpPosition(procedure->getProcedureVariables()[0]->getMemoryPosition());
+	
 	insertCode(procedure->getProcedureStartPoint(), "JUMP", m_commandPointer + 1);
 	
 	return m_commandPointer - commandStart + procedure->getCodeSize();
@@ -269,7 +270,11 @@ unsigned int CodeGenerator::executeProcedure(const std::string& procedureName, c
 			storeValueFromAccumulator(pointer);
 		}
 		
-		setValueToAccumulator(m_commandPointer + 3);
+		if(m_memory->getCurrentProcedure() != nullptr) {
+			setValueToAccumulator(m_commandPointer + 4);
+		} else {
+			setValueToAccumulator(m_commandPointer + 3);
+		}
 		storeValueFromAccumulator(procedure->getProcedureVariables()[0]);
 		writeCode("JUMP", procedure->getProcedureStartPoint() + 1);
 		
@@ -374,10 +379,7 @@ unsigned int CodeGenerator::printOutValue(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
 	unsigned int variableMemoryPointer = variable->getMemoryPosition();
 	
-	if(variable->getName().empty())
-		writeCode("PUT", variable->getValue());
-	else 
-		writeCode("PUT", variableMemoryPointer);
+	writeCode("PUT", variableMemoryPointer);
 
 	return m_commandPointer - commandStart;
 }
@@ -621,7 +623,7 @@ unsigned int CodeGenerator::div(Variable* a, Variable* b) {
 		subValueFromAccumulator(temp2Variable);
 		writeCode("JZERO", jumpVariable + 5);
 		setValueToAccumulator(zero);
-		writeCode("JPOS", jumpVariable + 54);
+		writeCode("JUMP", jumpVariable + 54);
 
 		// start of the loop
 		unsigned int startOfTheMultiplyLoop = m_commandPointer;

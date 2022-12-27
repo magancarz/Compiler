@@ -31,13 +31,15 @@ public:
 	Variable* getVariable(const std::string& name);
 	
 	void addNewProcedure();
+	inline Procedure* getCurrentProcedure() { return m_currentProcedure; }
 	void addVariableToProcedure(const std::string& name);
 	void setIdentifierToCurrentProcedure(const std::string& name);
 	Procedure* finishProcedure(unsigned int commandsSize);
 	void clearCurrentProcedure();
 
 	void prepareProcedureExecutionVariable(const std::string& name);
-	inline std::vector<Variable*>& getProcedureExecutionVariables() { return m_procedureExecutionVariables; }
+	void setExecutedProcedureIdentifier(const std::string& name);
+	std::vector<Variable*>& getProcedureExecutionVariables();
 	void clearProcedureExecutionVariables();
 	
 	void loadVariableToProcedureHead(const std::string& name);
@@ -54,5 +56,7 @@ private:
 	Procedure* m_currentProcedure = nullptr;
 	std::vector<Procedure*> m_procedures;
 
+	std::string m_executedProcedureIdentifier;
+	std::vector<std::string> m_procedureExecutionVariablesNames;
 	std::vector<Variable*> m_procedureExecutionVariables;
 };

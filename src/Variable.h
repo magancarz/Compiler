@@ -17,9 +17,13 @@ public:
 
 	inline unsigned int getMemoryPosition() { return m_memoryPosition; }
 
+	void setParentProcedureName(const std::string& name) { m_parentProcedureName = name; }
+	inline const std::string& getParentProcedureName() { return m_parentProcedureName; }
+
 	inline bool isInProcedure() { return m_isInProcedure; }
 
 	inline bool isPointer() { return m_isPointer; }
+	
 	inline Variable* getPointedVariable() { return m_pointing; }
 
 private:
@@ -28,8 +32,8 @@ private:
 
 	unsigned int m_memoryPosition;
 
+	std::string m_parentProcedureName;
 	bool m_isInProcedure = false;
-
 	bool m_isPointer = false;
 	Variable* m_pointing = nullptr;
 };
