@@ -5,14 +5,15 @@
 #include <string>
 #include <iostream>
 #include "parser.tab.hpp"
-#include "../Variable.h"
 
 int yylex();
 %}
 
+
 %s COMMENT
 
 %%
+
 \n                  {}
 [[:blank:]]+        {}
 
@@ -63,6 +64,5 @@ WRITE               { return WRITE; }
 ")"                  { return RB; }
 ","                  { return COMMA; }
 ";"                  { return SEMICOLON; }
-
 
 %%

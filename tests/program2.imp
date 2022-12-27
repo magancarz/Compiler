@@ -1,4 +1,3 @@
-[Rozkład na czynniki pierwsze]
 PROCEDURE check(n,d,p) IS
 VAR r
 BEGIN
@@ -19,14 +18,14 @@ BEGIN
     m:=dzielnik*dzielnik;
     WHILE n>=m DO
         check(n,dzielnik,potega);
-        IF potega>0 THEN [jest podzielna przez dzielnik]
+        IF potega>0 THEN
             WRITE dzielnik;
             WRITE potega;
         ENDIF
         dzielnik:=dzielnik+1;
         m:=dzielnik*dzielnik;
     ENDWHILE
-    IF n!=1 THEN [ostatni dzielnik różny od 1]
+    IF n!=1 THEN
         WRITE n;
         WRITE 1;
     ENDIF
