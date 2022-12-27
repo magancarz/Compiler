@@ -1,17 +1,24 @@
 PROGRAM IS
-VAR a, b
+VAR a, b, c
 BEGIN
-	READ a;
-	b := a;
-	a := a / 4;
-	WRITE a;
+	a := 123456789;
+	b := 987654321;
+	c := a * b;
+	WRITE c;
 
-	a := a * 4;
-	WRITE a;
+	a := 1024;
+	b := 512;
+	c := a * b;
+	WRITE c;
 
-	a := a + 4;
-	WRITE a;
+	a := 338396;
+	b := 5009;
+	c := a * b;
+	WRITE c;
 
-	a := a - 4;
-	WRITE a;
+	a := 792469;
+	b := 994501;
+	c := a * b;
+	WRITE c;
+
 END

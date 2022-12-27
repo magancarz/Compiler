@@ -38,11 +38,8 @@ public:
 	void clearCurrentProcedure();
 
 	void prepareProcedureExecutionVariable(const std::string& name);
-	void setExecutedProcedureIdentifier(const std::string& name);
 	std::vector<Variable*>& getProcedureExecutionVariables();
 	void clearProcedureExecutionVariables();
-	
-	void loadVariableToProcedureHead(const std::string& name);
 
 	inline std::vector<Variable*>& getMemoryVariables() { return m_variables; }
 

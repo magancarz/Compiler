@@ -455,92 +455,45 @@ unsigned int CodeGenerator::mul(Variable* a, Variable* b) {
 		}
 		storeValueFromAccumulator(temp2Variable);
 
-		subValueFromAccumulator(temp1Variable);
-		unsigned int jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 7);
-		loadValueToAccumulator(temp2Variable);
+		setValueToAccumulator(zero);
 		storeValueFromAccumulator(temp3Variable);
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp2Variable);
+
+		unsigned int startOfTheLoop = m_commandPointer;
+		loadValueToAccumulator(temp2Variable);
+		writeCode("JZERO", m_commandPointer + 24);
+
+		// check if Y is odd
+		subValueFromAccumulator(oneVariable);
+		writeCode("JZERO", m_commandPointer + 19);
+
+		loadValueToAccumulator(temp2Variable);
+		divideAccumulatorByHalf();
+		storeValueFromAccumulator(temp4Variable);
+		addValueToAccumulator(temp4Variable);
+		storeValueFromAccumulator(temp4Variable);
+		loadValueToAccumulator(temp2Variable);
+		subValueFromAccumulator(temp4Variable);
+		writeCode("JZERO", m_commandPointer + 4);
+
+		//if Y is odd, then add X to the result
 		loadValueToAccumulator(temp3Variable);
+		addValueToAccumulator(temp1Variable);
+		storeValueFromAccumulator(temp3Variable);
+
+		loadValueToAccumulator(temp1Variable);
+		addValueToAccumulator(temp1Variable);
 		storeValueFromAccumulator(temp1Variable);
 
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-
 		loadValueToAccumulator(temp2Variable);
-		storeValueFromAccumulator(temp5Variable);
-		// current power of 2
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
-
-		// result
-		setValueToAccumulator(zero);
-		storeValueFromAccumulator(temp6Variable);
-
-		// check if multiplier is 0 or 1
-		loadValueToAccumulator(temp2Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 38);
-		subValueFromAccumulator(oneVariable);
-		writeCode("JPOS", jumpVariable + 5);
-		loadValueToAccumulator(temp1Variable);
-		writeCode("JUMP", jumpVariable + 38);
-
-		// start of the loop
-		unsigned int startOfTheMultiplyLoop = m_commandPointer;
-
-		// check if current value >= remainding multiplier
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp3Variable);
-		
-		// jump to position where we can check if value > or == remainding multiplier
-		unsigned int jumpToCheckRelation = m_commandPointer;
-		writeCode("JZERO", jumpToCheckRelation + 8);
-
-		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(temp3Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp3Variable);
-
-		loadValueToAccumulator(temp4Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp4Variable);
-
-		// go back to the start of the loop
-		writeCode("JUMP", startOfTheMultiplyLoop);
-
-		loadValueToAccumulator(temp3Variable);
-		subValueFromAccumulator(temp5Variable);
-
-		unsigned int jumpVariable1 = m_commandPointer;
-		writeCode("JZERO", jumpVariable1 + 18);
-
-		loadValueToAccumulator(temp3Variable);
 		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp3Variable);
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp5Variable);
+		storeValueFromAccumulator(temp2Variable);
+		writeCode("JUMP", startOfTheLoop);
 
-		loadValueToAccumulator(temp4Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp4Variable);
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp6Variable);
-
-		setValueToAccumulator(1);
+		loadValueToAccumulator(temp3Variable);
+		addValueToAccumulator(temp1Variable);
 		storeValueFromAccumulator(temp3Variable);
 
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-
-		writeCode("JUMP", startOfTheMultiplyLoop);
-		
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp6Variable);
+		loadValueToAccumulator(temp3Variable);
 	}
 
 	return m_commandPointer - commandStart;
