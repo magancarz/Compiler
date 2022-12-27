@@ -1,0 +1,23 @@
+[prosta translacja]
+GET   1
+LOAD  1
+HALF
+STORE 2
+LOAD  2
+ADD   0
+STORE 2
+LOAD  1
+SUB   2
+JZERO 13
+SET   1
+PUT   0
+JUMP  15
+SET   0
+PUT   0
+LOAD  1
+HALF
+STORE 1
+LOAD  1
+JPOS  1
+HALT
+
