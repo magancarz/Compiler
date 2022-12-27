@@ -27,9 +27,6 @@ public:
 	void writeCode(const std::string& code, unsigned int value);
 	void changeCode(unsigned int codePosition, const std::string& code);
 	void changeCode(unsigned int codePosition, const std::string& code, unsigned int value);
-	void fixJumpCodeValues(unsigned int insertedCodePosition);
-	void insertCode(unsigned int codePosition, const std::string& code);
-	void insertCode(unsigned int codePosition, const std::string& code, unsigned int value);
 
 	// code generating functions
 	unsigned int addValueToAccumulator(Variable* variable);
@@ -52,11 +49,13 @@ public:
 	
 	unsigned int divideAccumulatorByHalf();
 
+	unsigned int generateInitialCodeForProcedure();
 	unsigned int generateProcedureEndCode(Procedure* procedure);
 	unsigned int executeProcedure(const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables);
 
 	unsigned int ifCondition(Condition* condition, unsigned int commandsLength);
 	unsigned int ifElseCondition(Condition* condition, unsigned int commands1Length, unsigned int commands2Length);
+	unsigned int generateMiddleIfElseJump();
 	unsigned int whileLoop(Condition* condition, unsigned int commandsLength);
 	unsigned int repeatUntilLoop(Condition* condition, unsigned int commandsLength);
 

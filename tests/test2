@@ -22,7 +22,7 @@ BEGIN
 					e := 15;
 					WRITE e;
 				ELSE
-					WRITE 7;
+					WRITE b;
 				ENDIF
 			ENDIF
 		ENDIF

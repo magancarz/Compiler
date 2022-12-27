@@ -57,9 +57,12 @@ procedures:
     | procedure                                                             
 
 procedure:
-    PROCEDURE proc_head IS VAR proc_head_declarations _BEGIN commands END   { codeGenerator->generateProcedureEndCode(memory->finishProcedure($7));
+    PROCEDURE                                                               { codeGenerator->generateInitialCodeForProcedure(); }
+    proc_head IS VAR proc_head_declarations _BEGIN commands END             { codeGenerator->generateProcedureEndCode(memory->finishProcedure($8));
                                                                               memory->clearCurrentProcedure(); }
-    | PROCEDURE proc_head IS _BEGIN commands END                            { codeGenerator->generateProcedureEndCode(memory->finishProcedure($5));
+
+    | PROCEDURE                                                             { codeGenerator->generateInitialCodeForProcedure(); }
+    proc_head IS _BEGIN commands END                                        { codeGenerator->generateProcedureEndCode(memory->finishProcedure($6));
                                                                               memory->clearCurrentProcedure(); }
 
 main:
@@ -73,11 +76,12 @@ commands:
 command:
     %empty                                                                  
     | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(*$1, $3) + $3; }
-    | IF condition THEN commands ELSE commands ENDIF                        { $$ = codeGenerator->ifElseCondition($2, $4, $6) + $4 + $6; }
+    | IF condition THEN commands ELSE                                       { codeGenerator->generateMiddleIfElseJump(); }
+    commands ENDIF                                                          { $$ = codeGenerator->ifElseCondition($2, $4, $7) + $4 + $7; }
     | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition($2, $4) + $4; }
     | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop($2, $4) + $4; }
     | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop($4, $2) + $2; }
-    | execute_proc_head                                                     { $$ = codeGenerator->executeProcedure(*$1, memory->getProcedureExecutionVariables()); }
+    | execute_proc_head SEMICOLON                                           { $$ = codeGenerator->executeProcedure(*$1, memory->getProcedureExecutionVariables()); }
     | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(*$2); }
     | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue($2); }
 

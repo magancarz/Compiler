@@ -48,57 +48,6 @@ void CodeGenerator::changeCode(unsigned int codePosition, const std::string& cod
 	m_code.at(codePosition) = finalCode.str();
 }
 
-
-void CodeGenerator::insertCode(unsigned int codePosition, const std::string& code) {
-	std::stringstream finalCode;
-	finalCode << code;
-	m_code.insert(m_code.begin() + codePosition, finalCode.str());
-
-	fixJumpCodeValues(codePosition);
-
-	m_commandPointer++;
-}
-
-void CodeGenerator::insertCode(unsigned int codePosition, const std::string& code, unsigned int value) {
-	std::stringstream finalCode;
-	finalCode << code << " " << value;
-	m_code.insert(m_code.begin() + codePosition, finalCode.str());
-
-	fixJumpCodeValues(codePosition);
-
-	m_commandPointer++;
-}
-
-void CodeGenerator::fixJumpCodeValues(unsigned int insertedCodePosition) {
-	// alter all JUMP, JPOS and JZERO calls that jump to position further than inserted code
-	for(int i = insertedCodePosition + 1; i < m_code.size(); i++) {
-		std::string codeToChange = m_code.at(i);
-		std::istringstream iss(codeToChange);
-		std::string starts, codeValue;
-		iss >> starts;
-		unsigned int jumpValue;
-		if(starts == "JUMP") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= insertedCodePosition) {
-				changeCode(i, "JUMP", jumpValue + 1);
-			}
-		} else if(starts == "JPOS") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= insertedCodePosition) {
-				changeCode(i, "JPOS", jumpValue + 1);
-			}
-		} else if(starts == "JZERO") {
-			iss >> codeValue;
-			jumpValue = std::stoi(codeValue);
-			if(jumpValue >= insertedCodePosition) {
-				changeCode(i, "JZERO", jumpValue + 1);
-			}
-		}
-	}
-}
-
 unsigned int CodeGenerator::addValueToAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
 
@@ -134,6 +83,10 @@ unsigned int CodeGenerator::loadValueToAccumulator(Variable* variable) {
 
 unsigned int CodeGenerator::setValueToAccumulator(Variable* variable) {
 	unsigned int commandStart = m_commandPointer;
+
+	if(!variable->getName().empty()) {
+		return loadValueToAccumulator(variable);
+	}
 
 	unsigned int value = variable->getValue();
 	m_memory->changeVariableValue(0, value);
@@ -223,6 +176,14 @@ unsigned int CodeGenerator::divideAccumulatorByHalf() {
 	return m_commandPointer - commandStart;
 }
 
+unsigned int CodeGenerator::generateInitialCodeForProcedure() {
+	unsigned int commandStart = m_commandPointer;
+
+	writeCode("JUMP", m_commandPointer);
+
+	return m_commandPointer - commandStart;
+}
+
 unsigned int CodeGenerator::generateProcedureEndCode(Procedure* procedure) {
 	unsigned int commandStart = m_commandPointer;
 	
@@ -240,7 +201,7 @@ unsigned int CodeGenerator::generateProcedureEndCode(Procedure* procedure) {
 	writeCode("JUMPI", procedure->getProcedureVariables()[0]->getMemoryPosition());
 	procedure->setProcedureEndingJumpPosition(procedure->getProcedureVariables()[0]->getMemoryPosition());
 	
-	insertCode(procedure->getProcedureStartPoint(), "JUMP", m_commandPointer + 1);
+	changeCode(procedure->getProcedureStartPoint() - 1, "JUMP", m_commandPointer);
 	
 	return m_commandPointer - commandStart + procedure->getCodeSize();
 }
@@ -268,15 +229,14 @@ unsigned int CodeGenerator::executeProcedure(const std::string& procedureName, c
 			storeValueFromAccumulator(pointer->getPointedVariable());
 			loadValueToAccumulator(procExecVar);
 			storeValueFromAccumulator(pointer);
+			
+			i++;
 		}
 		
-		if(m_memory->getCurrentProcedure() != nullptr) {
-			setValueToAccumulator(m_commandPointer + 4);
-		} else {
-			setValueToAccumulator(m_commandPointer + 3);
-		}
+		setValueToAccumulator(m_commandPointer + 3);
 		storeValueFromAccumulator(procedure->getProcedureVariables()[0]);
-		writeCode("JUMP", procedure->getProcedureStartPoint() + 1);
+
+		writeCode("JUMP", procedure->getProcedureStartPoint());
 		
 	} else {
 		printf("Procedure doesn't exist\n");
@@ -309,7 +269,7 @@ unsigned int CodeGenerator::ifCondition(Condition* condition, unsigned int comma
 
 unsigned int CodeGenerator::ifElseCondition(Condition* condition, unsigned int commands1Length, unsigned int commands2Length) {
 	unsigned int commandStart = m_commandPointer;
-	insertCode(commandStart - commands2Length, "JUMP", commandStart + 1);
+	changeCode(commandStart - commands2Length - 1, "JUMP", commandStart);
 	
 	unsigned int commandIfFalseStart = m_commandPointer;
 
@@ -325,7 +285,15 @@ unsigned int CodeGenerator::ifElseCondition(Condition* condition, unsigned int c
 		changeCode(condition->jumpIfFalsePosition, "JZERO", commandIfFalseStart - commands2Length);
 	}
 
-	return m_commandPointer - commandStart + condition->conditionCodeSize;
+	return m_commandPointer - commandStart + condition->conditionCodeSize + 1;
+}
+
+unsigned int CodeGenerator::generateMiddleIfElseJump() {
+	unsigned int commandStart = m_commandPointer;
+
+	writeCode("JUMP", m_commandPointer);
+
+	return m_commandPointer - commandStart;
 }
 
 unsigned int CodeGenerator::whileLoop(Condition* condition, unsigned int commandsLength) {

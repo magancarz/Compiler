@@ -12,7 +12,7 @@ BEGIN
 	x := 5;
 	a := a + x;
 	WRITE a;
-	addthree(a)
+	addthree(a);
 END
 
 PROCEDURE addseven(a) IS
@@ -21,7 +21,7 @@ BEGIN
 	x := 7;
 	a := a + x;
 	WRITE a;
-	addfive(a)
+	addfive(a);
 END
 
 PROGRAM IS
@@ -29,6 +29,6 @@ VAR a, b
 BEGIN
 	a := 10;
 	WRITE a;
-	addseven(a)
+	addseven(a);
 	WRITE a;
 END
