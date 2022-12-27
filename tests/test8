@@ -1,0 +1,24 @@
+PROGRAM IS
+VAR a, b, c
+BEGIN
+	a := 1234078;
+	b := 987654321;
+	c := b / a;
+	WRITE c;
+
+	a := 1024;
+	b := 33;
+	c := a / b;
+	WRITE c;
+
+	a := 338396;
+	b := 501;
+	c := a / b;
+	WRITE c;
+
+	a := 994501;
+	b := 792;
+	c := a / b;
+	WRITE c;
+
+END

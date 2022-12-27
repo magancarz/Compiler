@@ -814,19 +814,18 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 		}
 
 		subValueFromAccumulator(temp1Variable);
-		unsigned int jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 5);
+		writeCode("JPOS", m_commandPointer + 5);
 
 		loadValueToAccumulator(temp1Variable);
 		subValueFromAccumulator(temp2Variable);
 		
-		writeCode("JPOS", jumpVariable + 5);
+		writeCode("JPOS", m_commandPointer + 2);
 		
 		jumpIfTruePosition = m_commandPointer;
 		writeCode("JUMP", jumpIfTruePosition + 2);
 		
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfFalsePosition);
+		writeCode("JUMP", jumpIfFalsePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
@@ -866,19 +865,15 @@ Condition* CodeGenerator::nequal(Variable* a, Variable* b) {
 		}
 
 		subValueFromAccumulator(temp1Variable);
-		unsigned int jumpPosition = m_commandPointer;
-		writeCode("JPOS", jumpPosition + 6);
+		writeCode("JPOS", m_commandPointer + 4);
 
 		loadValueToAccumulator(temp1Variable);
 		subValueFromAccumulator(temp2Variable);
 		jumpIfTruePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfTruePosition + 3);
+		writeCode("JPOS", jumpIfTruePosition + 2);
 		
-		setValueToAccumulator(zero);
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfFalsePosition + 2);
-		
-		setValueToAccumulator(1);
+		writeCode("JUMP", jumpIfFalsePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
@@ -916,11 +911,9 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 
 		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JZERO", jumpIfFalsePosition + 3);
-		setValueToAccumulator(1);
+		writeCode("JZERO", jumpIfFalsePosition + 2);
 		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(zero);
+		writeCode("JUMP", jumpIfTruePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
@@ -958,11 +951,9 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 
 		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JZERO", jumpIfFalsePosition + 3);
-		setValueToAccumulator(1);
+		writeCode("JZERO", jumpIfFalsePosition + 2);
 		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(zero);
+		writeCode("JUMP", jumpIfTruePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
@@ -1000,11 +991,9 @@ Condition* CodeGenerator::greq(Variable* a, Variable* b) {
 		
 		subValueFromAccumulator(temp1Variable);
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfFalsePosition + 3);
-		setValueToAccumulator(1);
+		writeCode("JPOS", jumpIfFalsePosition + 2);
 		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(zero);
+		writeCode("JUMP", jumpIfTruePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
@@ -1042,10 +1031,9 @@ Condition* CodeGenerator::leq(Variable* a, Variable* b) {
 		
 		subValueFromAccumulator(temp2Variable);
 		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfFalsePosition + 3);
+		writeCode("JPOS", jumpIfFalsePosition + 2);
 		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 2);
-		setValueToAccumulator(zero);
+		writeCode("JUMP", jumpIfTruePosition + 1);
 	}
 
 	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
