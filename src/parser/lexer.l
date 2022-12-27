@@ -17,11 +17,7 @@ int yylex();
 \n                  {}
 [[:blank:]]+        {}
 
-"["                 { BEGIN(COMMENT); }
-<COMMENT>{
-[^\]]               ;
-"]"                 { BEGIN(INITIAL); }
-}
+"[".*"]"			{}
 
 PROCEDURE           { return PROCEDURE; }
 IS                  { return IS; }
