@@ -58,4 +58,9 @@
     <CustomBuild Include="src\parser\parser.ypp" />
     <CustomBuild Include="src\parser\lexer.l" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile">
+      <Filter>Pliki źródłowe</Filter>
+    </None>
+  </ItemGroup>
 </Project>

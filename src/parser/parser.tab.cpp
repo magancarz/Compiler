@@ -1626,8 +1626,12 @@ int parser_main(int argc, char** argv) {
     } catch(const char* error) {
         yyerror(error);
     }
-    
+
+	#ifdef _DEBUG
     std::cout << codeGenerator->getCode() << std::endl;
+	#endif
+    
+    codeGenerator->generateOutput();
 
     delete codeGenerator;
     delete memory;

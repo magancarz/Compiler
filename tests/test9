@@ -1,5 +1,5 @@
 PROGRAM IS
-VAR a, b, b
+VAR a, b, c
 BEGIN
 	a := 5;
 	WRITE a;

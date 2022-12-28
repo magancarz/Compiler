@@ -131,7 +131,7 @@ unsigned int CodeGenerator::storeValueFromAccumulatorToPointedVariable(Variable*
 }
 
 unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const std::string& value) {
-	unsigned int commandStart = m_commandPointer;
+	const unsigned int command_start = m_commandPointer;
 
 	if(!value.empty()) {
 		unsigned int intValue = std::stoi(value);
@@ -141,10 +141,10 @@ unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const
 		assignValueToVariable(name, intValue);
 	}
 
-	return m_commandPointer - commandStart;
+	return m_commandPointer - command_start;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(const std::string& name, unsigned int value) {
+unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const unsigned int value) {
 	unsigned int commandStart = m_commandPointer;
 
 	Variable* variable = m_memory->getVariable(name);
@@ -1171,4 +1171,14 @@ std::string CodeGenerator::getCode() {
 	}
 
 	return code.str();
+}
+
+void CodeGenerator::generateOutput() {
+	for(std::string s : m_code) {
+		if(s == "HALT") {
+			m_output << s;
+			return;
+		}
+		m_output << s << "\n";
+	}
 }

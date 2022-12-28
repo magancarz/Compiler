@@ -77,6 +77,8 @@ public:
 
 	inline FILE* getInput() { return m_input; }
 
+	void generateOutput();
+
 private:
 	FILE* m_input;
 	std::ofstream m_output;
