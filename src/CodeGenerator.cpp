@@ -231,6 +231,7 @@ unsigned int CodeGenerator::executeProcedure(const std::string& procedureName, c
 		for(std::vector<Variable*>::iterator it = procedurePointers->begin(); it != procedurePointers->end(); it++) {
 			Variable* pointer = *it;
 			Variable* procExecVar = procedureExecutionVariables[i];
+			procExecVar->setIsInitialized(true);
 			setValueToAccumulator(procExecVar->getMemoryPosition());
 			storeValueFromAccumulator(pointer->getPointedVariable());
 			loadValueToAccumulator(procExecVar);

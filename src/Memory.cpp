@@ -219,10 +219,6 @@ Variable* Memory::getVariable(const std::string& name) {
 
 void Memory::prepareProcedureExecutionVariable(const std::string& name) {
 	Variable* variable = getVariableFromMemory(name);
-	if(!variable->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, variable->getName().c_str());
-		exit(1);
-	}
 	m_procedureExecutionVariables.push_back(getVariableFromMemory(name));
 }
 
