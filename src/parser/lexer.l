@@ -9,7 +9,6 @@
 int yylex();
 %}
 
-
 %s COMMENT
 
 %%

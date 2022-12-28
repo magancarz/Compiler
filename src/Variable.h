@@ -9,6 +9,9 @@ public:
 	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition);
 	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition, Variable* pointing);
 
+	inline bool isInitialized() { return m_isInitialized; }
+	void setIsInitialized(bool value) { m_isInitialized = value; }
+
 	inline void setName(const std::string& name) { m_name = name; }
 	inline std::string getName() { return m_name; }
 
@@ -27,6 +30,8 @@ public:
 	inline Variable* getPointedVariable() { return m_pointing; }
 
 private:
+	bool m_isInitialized = false;
+
 	std::string m_name = "";
 	unsigned int m_value = 0;
 

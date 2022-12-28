@@ -9,13 +9,14 @@
     #include "../Variable.h"
 
     extern FILE* yyin;
+    extern int yylineno;
 
     CodeGenerator* codeGenerator;
     Memory* memory;
 
     int yylex(void);
-    void yyerror(std::string error);
-    %}
+    void yyerror(const char* error);
+%}
 
     %code requires {
     #include "../CodeGenerator.h"
@@ -134,8 +135,8 @@ value:
 
 %%
 
-void yyerror(std::string error) {
-    std::cout << error << std::endl;
+void yyerror(const char* error) {
+    fprintf(stderr, "Error | Line: %d\n%s\n", yylineno, error);
     exit(1);
 }
 
@@ -148,14 +149,14 @@ int parser_main(int argc, char** argv) {
 
     try {
         yyparse();
-    } catch(std::string error) {
+    } catch(const char* error) {
         yyerror(error);
     }
     
     std::cout << codeGenerator->getCode() << std::endl;
 
-    delete memory;
     delete codeGenerator;
+    delete memory;
 
     return 0;
 }

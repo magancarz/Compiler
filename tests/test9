@@ -1,8 +1,8 @@
 PROGRAM IS
-VAR a, b, c
+VAR a, b, b
 BEGIN
 	a := 5;
 	WRITE a;
 	WRITE 10;
-
+	WRITE 0;
 END

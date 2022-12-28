@@ -13,4 +13,3 @@ BEGIN
   pa(a,b);
   WRITE b;
 END
-

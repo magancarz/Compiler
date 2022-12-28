@@ -14,7 +14,7 @@ public:
 
 	void addVariableToMemory(unsigned int value);
 	void addVariableToMemory(const std::string& name, unsigned int value);
-	Variable* addPointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
+	Variable* addProcedurePointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
 	Variable* addProcedureVariableToMemory(const std::string& name, bool isInProcedure);
 	
 	Variable* getVariableFromMemory(unsigned int memoryPosition);
@@ -36,6 +36,7 @@ public:
 	void setIdentifierToCurrentProcedure(const std::string& name);
 	Procedure* finishProcedure(unsigned int commandsSize);
 	void clearCurrentProcedure();
+	bool checkIfProcedureExists(const std::string& name);
 
 	void prepareProcedureExecutionVariable(const std::string& name);
 	std::vector<Variable*>& getProcedureExecutionVariables();

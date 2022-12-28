@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Memory.h"
 
+extern int yylineno;
+
 Memory::Memory() {
 	initializeHelpingVariables();
 }
@@ -10,6 +12,11 @@ Memory::~Memory() {
 		delete v;
 	}
 	m_variables.clear();
+
+	for(auto p : m_procedures) {
+		delete p;
+	}
+	m_procedures.clear();
 }
 
 void Memory::initializeHelpingVariables() {
@@ -39,7 +46,7 @@ void Memory::addVariableToMemory(unsigned int value) {
 
 void Memory::addVariableToMemory(const std::string& name, unsigned int value) {
 	if(!name.empty() && checkIfVariableExists(name)) {
-		printf("Variable %s already exists.\n", name.c_str());
+		printf("Error at line %d: Variable %s already exists.\n", yylineno, name.c_str());
 		exit(1);
 	}
 
@@ -49,8 +56,8 @@ void Memory::addVariableToMemory(const std::string& name, unsigned int value) {
 }
 
 Variable* Memory::addProcedureVariableToMemory(const std::string& name, bool isInProcedure) {
-	if(name.empty()) {
-		printf("Procedure variable name is empty.\n", name.c_str());
+	if(!name.empty() && checkIfVariableExists(name)) {
+		printf("Error at line %d: Variable %s already exists in current procedure.\n", yylineno, name.c_str());
 		exit(1);
 	}
 
@@ -62,9 +69,9 @@ Variable* Memory::addProcedureVariableToMemory(const std::string& name, bool isI
 	return newVariable;
 }
 
-Variable* Memory::addPointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing) {
-	if(name.empty()) {
-		printf("Procedure variable name is empty.\n", name.c_str());
+Variable* Memory::addProcedurePointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing) {
+	if(!name.empty() && checkIfVariableExists(name)) {
+		printf("Error at line %d: Variable %s already exists in current procedure.\n", yylineno, name.c_str());
 		exit(1);
 	}
 
@@ -92,17 +99,21 @@ void Memory::addVariableToProcedure(const std::string& name) {
 		addNewProcedure();
 	}
 	
-	// if the name is empty, then add variable as pointer
+	// if the name is empty, then add variable as a pointer, otherwise add it as a regular variable
 	if(m_currentProcedure->getName().empty()) {
-		m_currentProcedure->getProcedureVariables().push_back(addPointerToMemory(name, true, nullptr));
+		m_currentProcedure->getProcedureVariables().push_back(addProcedurePointerToMemory(name, true, nullptr));
 		return;
 	}
 
-	// if the name isn't empty, then add it as a normal variable
 	m_currentProcedure->getProcedureVariables().push_back(addProcedureVariableToMemory(name, true));
 }
 
 void Memory::setIdentifierToCurrentProcedure(const std::string& name) {
+	if(!name.empty() && checkIfProcedureExists(name)) {
+		printf("Error at line %d: Procedure %s already exists.\n", yylineno, name.c_str());
+		exit(1);
+	}
+	
 	if(m_currentProcedure == nullptr) {
 		addNewProcedure();
 	}
@@ -134,14 +145,14 @@ void Memory::changeVariableValue(const std::string& name, unsigned int value) {
 		Variable* variable = getVariable(name);
 		variable->setValue(value);	
 	} else {
-		printf("Variable %s doesn't exist.\n", name.c_str());
+		printf("Error at line %d: Variable %s doesn't exist.\n", yylineno, name.c_str());
 		exit(1);
 	}
 }
 
 Variable* Memory::getVariableFromMemory(unsigned int memoryPosition) {
 	if(memoryPosition > m_variables.size()) {
-		printf("Memory pointer out of range\n");
+		printf("Error at line %d: Memory pointer out of range\n", yylineno);
 		exit(1);
 	}
 	
@@ -152,7 +163,7 @@ Variable* Memory::getVariableFromMemory(const std::string& name) {
 	if(!name.empty() && checkIfVariableExists(name)) {
 		return findVariable(name);	
 	} else {
-		printf("Variable %s doesn't exist.\n", name.c_str());
+		printf("Error at line %d: Variable %s doesn't exist.\n", yylineno, name.c_str());
 		exit(1);
 	}
 }
@@ -164,6 +175,16 @@ Variable* Memory::getValueHolder(unsigned int value) {
 bool Memory::checkIfVariableExists(const std::string& name) {
 	Variable* variable = findVariable(name);
 	return (variable != nullptr)? true : false;
+}
+
+bool Memory::checkIfProcedureExists(const std::string& name) {
+	for(Procedure* procedure : m_procedures) {
+		if(procedure->getName() == name) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Variable* Memory::findVariable(unsigned int memoryPosition) {
@@ -197,32 +218,18 @@ Variable* Memory::getVariable(const std::string& name) {
 }
 
 void Memory::prepareProcedureExecutionVariable(const std::string& name) {
-	//m_procedureExecutionVariablesNames.push_back(name);
+	Variable* variable = getVariableFromMemory(name);
+	if(!variable->isInitialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, variable->getName().c_str());
+		exit(1);
+	}
 	m_procedureExecutionVariables.push_back(getVariableFromMemory(name));
 }
 
-//void Memory::setExecutedProcedureIdentifier(const std::string& name) {
-//	m_executedProcedureIdentifier = name;
-//}
-
 std::vector<Variable*>& Memory::getProcedureExecutionVariables() {
-	/*for(std::string name : m_procedureExecutionVariablesNames) {
-		for(Variable* variable : m_variables) {
-			std::string variableName = variable->getName();
-
-			if(variableName == name && variable->getParentProcedureName() == m_executedProcedureIdentifier) {
-				m_procedureExecutionVariables.push_back(variable);
-			}
-		}
-	}*/
-
 	return m_procedureExecutionVariables;
 }
 
 void Memory::clearProcedureExecutionVariables() {
-	// we don't need to delete pointers inside of vector,
-	// because we are still using them
 	m_procedureExecutionVariables.clear();
-	//m_procedureExecutionVariablesNames.clear();
-	//m_executedProcedureIdentifier = "";
 }
