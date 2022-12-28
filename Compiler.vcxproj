@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="error_test.sh" />
     <None Include="Makefile">
       <FileType>CppCode</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -145,6 +146,7 @@
     <ClCompile Include="src\parser\parser.tab.cpp" />
     <ClCompile Include="src\Procedure.cpp" />
     <ClCompile Include="src\Variable.cpp" />
+    <None Include="test.sh" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\CodeGenerator.h" />
