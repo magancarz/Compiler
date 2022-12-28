@@ -343,6 +343,7 @@ unsigned int CodeGenerator::repeatUntilLoop(Condition* condition, unsigned int c
 unsigned int CodeGenerator::readValue(const std::string& variableName) {
 	unsigned int commandStart = m_commandPointer;
 	Variable* variable = m_memory->getVariable(variableName);
+	variable->setIsInitialized(true);
 
 	writeCode("GET", variable->getMemoryPosition());
 
@@ -375,12 +376,12 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = aVal + bVal;
 	
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -409,12 +410,12 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 unsigned int CodeGenerator::sub(Variable* a, Variable* b) {
 	unsigned int commandStart = m_commandPointer;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -454,12 +455,12 @@ unsigned int CodeGenerator::mul(Variable* a, Variable* b) {
 	unsigned int aVal = a->getValue();
 	unsigned int bVal = b->getValue();
 	
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -544,12 +545,12 @@ unsigned int CodeGenerator::div(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -695,12 +696,12 @@ unsigned int CodeGenerator::mod(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (bVal != 0)? aVal % bVal : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -846,12 +847,12 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal == bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -907,12 +908,12 @@ Condition* CodeGenerator::nequal(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal != bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -965,12 +966,12 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal > bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -1015,12 +1016,12 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal < bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -1065,12 +1066,12 @@ Condition* CodeGenerator::greq(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal >= bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -1115,12 +1116,12 @@ Condition* CodeGenerator::leq(Variable* a, Variable* b) {
 	unsigned int bVal = b->getValue();
 	unsigned int result = (aVal >= bVal)? 1 : 0;
 
-	if(!a->isInitialized()) {
+	if(!a->getName().empty() && !a->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
 		exit(1);
 	}
 
-	if(!b->isInitialized()) {
+	if(!b->getName().empty() && !b->isInitialized()) {
 		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
 		exit(1);
 	}
@@ -1163,7 +1164,7 @@ std::string CodeGenerator::getCode() {
 	std::stringstream code;
 	unsigned int i = 0;
 	for(std::string s : m_code) {
-		#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
+		#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO
 		code << i << ". ";
 		#endif
 		code << s << "\n";

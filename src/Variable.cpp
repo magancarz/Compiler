@@ -11,7 +11,7 @@ m_name(name), m_value(value), m_memoryPosition(memoryPosition) {
 }
 
 Variable::Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition) :
-m_name(name), m_memoryPosition(memoryPosition), m_isInProcedure(isInProcedure), m_isInitialized(true) {
+m_name(name), m_memoryPosition(memoryPosition), m_isInProcedure(isInProcedure) {
 
 }
 
