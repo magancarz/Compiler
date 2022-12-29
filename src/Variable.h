@@ -4,41 +4,41 @@
 
 class Variable {
 public:
-	Variable(unsigned int value, unsigned int memoryPosition);
-	Variable(const std::string& name, unsigned int value, unsigned int memoryPosition);
-	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition);
-	Variable(bool isInProcedure, const std::string& name, unsigned int memoryPosition, Variable* pointing);
+	Variable(unsigned int value, unsigned int memory_position);
+	Variable(std::string name, unsigned int value, unsigned int memory_position);
+	Variable(bool is_in_procedure, std::string name, unsigned int memory_position);
+	Variable(bool is_in_procedure, std::string name, unsigned int memory_position, Variable* pointing);
 
-	inline bool isInitialized() { return m_isInitialized; }
-	void setIsInitialized(bool value) { m_isInitialized = value; }
+	inline bool is_initialized() { return m_is_initialized; }
+	void set_is_initialized(bool value) { m_is_initialized = value; }
 
-	inline void setName(const std::string& name) { m_name = name; }
-	inline std::string getName() { return m_name; }
+	inline void set_name(const std::string& name) { m_name = name; }
+	inline std::string get_name() { return m_name; }
 
-	inline void setValue(const unsigned int value) { m_value = value; }
-	inline unsigned int getValue() { return m_value; }
+	inline void set_value(const unsigned int value) { m_value = value; }
+	inline unsigned int get_value() { return m_value; }
 
-	inline unsigned int getMemoryPosition() { return m_memoryPosition; }
+	inline unsigned int get_memory_position() { return m_memory_position; }
 
-	void setParentProcedureName(const std::string& name) { m_parentProcedureName = name; }
-	inline const std::string& getParentProcedureName() { return m_parentProcedureName; }
+	void set_parent_procedure_name(const std::string& name) { m_parent_procedure_name = name; }
+	inline const std::string& get_parent_procedure_name() { return m_parent_procedure_name; }
 
-	inline bool isInProcedure() { return m_isInProcedure; }
+	inline bool is_in_procedure() { return m_is_in_procedure; }
 
-	inline bool isPointer() { return m_isPointer; }
+	inline bool is_pointer() { return m_is_pointer; }
 	
-	inline Variable* getPointedVariable() { return m_pointing; }
+	inline Variable* get_pointed_variable() { return m_pointing; }
 
 private:
-	bool m_isInitialized = false;
+	bool m_is_in_procedure = false;
 
 	std::string m_name = "";
 	unsigned int m_value = 0;
 
-	unsigned int m_memoryPosition;
+	unsigned int m_memory_position;
 
-	std::string m_parentProcedureName;
-	bool m_isInProcedure = false;
-	bool m_isPointer = false;
 	Variable* m_pointing = nullptr;
+	std::string m_parent_procedure_name;
+	bool m_is_pointer = false;
+	bool m_is_initialized = false;
 };

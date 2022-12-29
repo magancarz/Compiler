@@ -1,21 +1,9 @@
 #include "Procedure.h"
 
-Procedure::Procedure() {
-
-}
-
-Procedure::~Procedure() {
-
-}
-
-std::vector<Variable*>* Procedure::getProcedurePointers() {
-	std::vector<Variable*>* pointers = new std::vector<Variable*>();
-
-	for(Variable* variable : m_variables) {
-		if(variable->isPointer()) {
-			pointers->push_back(variable);
-		}
+void Procedure::add_variable(Variable* variable) {
+	if(variable->is_pointer()) {
+		m_pointers.push_back(variable);
 	}
 
-	return pointers;
+	m_variables.push_back(variable);
 }

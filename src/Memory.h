@@ -10,51 +10,50 @@ public:
 	Memory();
 	~Memory();
 
-	void initializeHelpingVariables();
+	void initialize_helping_variables();
 
-	void addVariableToMemory(unsigned int value);
-	void addVariableToMemory(const std::string& name, unsigned int value);
-	Variable* addProcedurePointerToMemory(const std::string& name, bool isInProcedure, Variable* pointing);
-	Variable* addProcedureVariableToMemory(const std::string& name, bool isInProcedure);
+	void add_variable_to_memory(unsigned int value);
+	void add_variable_to_memory(const std::string& name, unsigned int value);
+	Variable* add_procedure_pointer_to_memory(const std::string& name, Variable* pointing);
+	Variable* add_procedure_variable_to_memory(const std::string& name);
 	
-	Variable* getVariableFromMemory(unsigned int memoryPosition);
-	Variable* getVariableFromMemory(const std::string& name);
+	Variable* get_variable_from_memory(unsigned int memory_position) const;
+	Variable* get_variable_from_memory(const std::string& name) const;
 
-	void changeVariableValue(unsigned int memoryPosition, unsigned int value);
-	void changeVariableValue(const std::string& name, unsigned int value);
+	void change_variable_value(unsigned int memory_position, unsigned int value) const;
+	void change_variable_value(const std::string& name, unsigned int value) const;
 
-	bool checkIfVariableExists(const std::string& name);
+	bool check_if_variable_exists(const std::string& name) const;
 
-	Variable* findVariable(unsigned int memoryPosition);
-	Variable* findVariable(const std::string& name);
-	Variable* getValueHolder(unsigned int value);
-	Variable* getVariable(const std::string& name);
+	Variable* find_variable(unsigned int memory_position) const;
+	Variable* find_variable(const std::string& name) const;
+	static Variable* get_value_holder(unsigned int value);
+	Variable* get_variable(const std::string& name) const;
 	
-	void addNewProcedure();
-	inline Procedure* getCurrentProcedure() { return m_currentProcedure; }
-	void addVariableToProcedure(const std::string& name);
-	void setIdentifierToCurrentProcedure(const std::string& name);
-	Procedure* finishProcedure(unsigned int commandsSize);
-	void clearCurrentProcedure();
-	bool checkIfProcedureExists(const std::string& name);
+	void add_new_procedure();
+	Procedure* get_current_procedure() const { return m_current_procedure; }
+	void add_variable_to_procedure(const std::string& name);
+	void set_identifier_to_current_procedure(const std::string& name);
+	Procedure* finish_procedure(unsigned int commands_size);
+	void clear_current_procedure();
+	bool check_if_procedure_exists(const std::string& name) const;
 
-	void prepareProcedureExecutionVariable(const std::string& name);
-	std::vector<Variable*>& getProcedureExecutionVariables();
-	void clearProcedureExecutionVariables();
+	void prepare_procedure_execution_variable(const std::string& name);
+	std::vector<Variable*>& get_procedure_execution_variables();
+	void clear_procedure_execution_variables();
 
-	inline std::vector<Variable*>& getMemoryVariables() { return m_variables; }
+	std::vector<Variable*>& get_memory_variables() { return m_variables; }
 
-	inline std::vector<Procedure*>& getProcedures() { return m_procedures; }
+	std::vector<Procedure*>& get_procedures() { return m_procedures; }
 
 private:
-	unsigned int m_freeMemoryPointer = 0;
+	unsigned int m_free_memory_pointer = 0;
 
 	std::vector<Variable*> m_variables;
 	
-	Procedure* m_currentProcedure = nullptr;
+	Procedure* m_current_procedure = nullptr;
 	std::vector<Procedure*> m_procedures;
 
-	std::string m_executedProcedureIdentifier;
-	std::vector<std::string> m_procedureExecutionVariablesNames;
-	std::vector<Variable*> m_procedureExecutionVariables;
+	std::string m_executed_procedure_identifier;
+	std::vector<Variable*> m_procedure_execution_variables;
 };

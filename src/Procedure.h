@@ -7,32 +7,33 @@
 
 class Procedure {
 public:
-	Procedure();
-	~Procedure();
+	Procedure() = default;
+	~Procedure() = default;
 
-	inline std::string getName() const { return m_name; }
-	void setProcedureName(const std::string& name) { m_name = name; }
+	std::string get_name() const { return m_name; }
+	void set_procedure_name(const std::string& name) { m_name = name; }
 	
-	void setCodeSize(unsigned int size) { m_codeSize = size; }
-	inline unsigned int getCodeSize() const { return m_codeSize; }
+	void set_code_size(const unsigned int size) { m_code_size = size; }
+	unsigned int get_code_size() const { return m_code_size; }
 
-	void addVariable(Variable* variable) { m_variables.push_back(variable); }
-	std::vector<Variable*>& getProcedureVariables() { return m_variables; }
-	std::vector<Variable*>* getProcedurePointers();
+	void add_variable(Variable* variable);
+	std::vector<Variable*>& get_procedure_variables() { return m_variables; }
+	std::vector<Variable*>& get_procedure_pointers() { return m_pointers; }
 
-	inline unsigned int getProcedureStartPoint() { return m_procedureStartPoint; }
-	void setProcedureStartPoint(unsigned int startPoint) { m_procedureStartPoint = startPoint; }
+	unsigned int get_procedure_start_point() const { return m_procedure_start_point; }
+	void set_procedure_start_point(const unsigned int start_point) { m_procedure_start_point = start_point; }
 
-	inline unsigned int getProcedureEndingJumpPosition() { return m_endingJumpPosition; }
-	void setProcedureEndingJumpPosition(unsigned int endingJumpPosition) { m_endingJumpPosition = endingJumpPosition; }
+	unsigned int get_procedure_ending_jump_position() const { return m_ending_jump_position; }
+	void set_procedure_ending_jump_position(const unsigned int ending_jump_position) { m_ending_jump_position = ending_jump_position; }
 
 private:
 	std::vector<Variable*> m_variables;
+	std::vector<Variable*> m_pointers;
 	
 	std::string m_name;
 	
-	unsigned int m_procedureStartPoint,
-				 m_endingJumpPosition;
+	unsigned int m_procedure_start_point = 0,
+				 m_ending_jump_position = 0;
 
-	unsigned int m_codeSize;
+	unsigned int m_code_size = 0;
 };

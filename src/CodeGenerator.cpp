@@ -1,4 +1,4 @@
-#include "CodeGenerator.h"
+#include "Code_generator.h"
 
 #include <sstream>
 #include <iostream>
@@ -10,1161 +10,1142 @@ CodeGenerator::CodeGenerator(int argc, char** argv) {
     m_output = std::ofstream(argv[2]);
 
 	// initialize temp variables
-	writeCode("SET", 1);
-	writeCode("STORE", 7);
+	write_code("SET", 1);
+	write_code("STORE", 7);
 }
 
 CodeGenerator::~CodeGenerator() {
 	fclose(m_input);
 }
 
-void CodeGenerator::setMemoryPointer(Memory* memory) {
+void CodeGenerator::set_memory_pointer(Memory* memory) {
 	m_memory = memory;
 }
 
-void CodeGenerator::writeCode(const std::string& code) {
-	std::stringstream finalCode;
-	finalCode << code;
-	m_code.push_back(finalCode.str());
+void CodeGenerator::write_code(const std::string& code) {
+	std::stringstream final_code;
+	final_code << code;
+	m_code.push_back(final_code.str());
 
-	m_commandPointer++;
+	m_command_pointer++;
 }
 
-void CodeGenerator::writeCode(const std::string& code, unsigned int value) {
-	std::stringstream finalCode;
-	finalCode << code << " " << value;
-	m_code.push_back(finalCode.str());
+void CodeGenerator::write_code(const std::string& code, const unsigned int value) {
+	std::stringstream final_code;
+	final_code << code << " " << value;
+	m_code.push_back(final_code.str());
 
-	m_commandPointer++;
+	m_command_pointer++;
 }
 
-void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code) {
-	std::stringstream finalCode;
-	finalCode << code;
-	m_code.at(codePosition) = finalCode.str();
+void CodeGenerator::change_code(const unsigned int code_position, const std::string& code) {
+	std::stringstream final_code;
+	final_code << code;
+	m_code.at(code_position) = final_code.str();
 }
 
-void CodeGenerator::changeCode(unsigned int codePosition, const std::string& code, unsigned int value) {
-	std::stringstream finalCode;
-	finalCode << code << " " << value;
-	m_code.at(codePosition) = finalCode.str();
+void CodeGenerator::change_code(const unsigned int code_position, const std::string& code, const unsigned int value) {
+	std::stringstream final_code;
+	final_code << code << " " << value;
+	m_code.at(code_position) = final_code.str();
 }
 
-unsigned int CodeGenerator::addValueToAccumulator(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::add_value_to_accumulator(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	accumulator->setValue(accumulator->getValue() + variable->getValue());
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	accumulator->set_value(accumulator->get_value() + variable->get_value());
 
-	writeCode("ADD", variable->getMemoryPosition());
+	write_code("ADD", variable->get_memory_position());
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::subValueFromAccumulator(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::sub_value_from_accumulator(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	accumulator->setValue(accumulator->getValue() - variable->getValue());
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	accumulator->set_value(accumulator->get_value() - variable->get_value());
 
-	writeCode("SUB", variable->getMemoryPosition());
+	write_code("SUB", variable->get_memory_position());
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::loadValueToAccumulator(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::load_value_to_accumulator(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	unsigned int value = variable->getValue();
-	m_memory->changeVariableValue(0, value);
+	const unsigned int value = variable->get_value();
+	m_memory->change_variable_value(0, value);
 
-	writeCode("LOAD", variable->getMemoryPosition());
+	write_code("LOAD", variable->get_memory_position());
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::setValueToAccumulator(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::set_value_to_accumulator(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	if(!variable->getName().empty()) {
-		return loadValueToAccumulator(variable);
+	if(!variable->get_name().empty()) {
+		return load_value_to_accumulator(variable);
 	}
 
-	unsigned int value = variable->getValue();
-	m_memory->changeVariableValue(0, value);
+	const unsigned int value = variable->get_value();
+	m_memory->change_variable_value(0, value);
 	
-	writeCode("SET", value);
+	write_code("SET", value);
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::setValueToAccumulator(unsigned int value) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::set_value_to_accumulator(const unsigned int value) {
+	const unsigned int command_start = m_command_pointer;
 
-	m_memory->changeVariableValue(0, value);
+	m_memory->change_variable_value(0, value);
 
-	writeCode("SET", value);
+	write_code("SET", value);
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::storeValueFromAccumulator(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::store_value_from_accumulator(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	variable->setValue(accumulator->getValue());
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	variable->set_value(accumulator->get_value());
 
-	writeCode("STORE", variable->getMemoryPosition());
+	write_code("STORE", variable->get_memory_position());
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::storeValueFromAccumulatorToPointedVariable(Variable* pointer) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::store_value_from_accumulator_to_pointed_variable(Variable* pointer) {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	pointer->getPointedVariable()->setValue(accumulator->getValue());
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	pointer->get_pointed_variable()->set_value(accumulator->get_value());
 
-	writeCode("STOREI", pointer->getPointedVariable()->getMemoryPosition());
+	write_code("STOREI", pointer->get_pointed_variable()->get_memory_position());
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const std::string& value) {
-	const unsigned int command_start = m_commandPointer;
+unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, const std::string& value) {
+	const unsigned int command_start = m_command_pointer;
 
 	if(!value.empty()) {
-		unsigned int intValue = std::stoi(value);
-		assignValueToVariable(name, intValue);
+		const unsigned int int_value = std::stoi(value);
+		assign_value_to_variable(name, int_value);
 	} else {
-		unsigned int intValue = 0;
-		assignValueToVariable(name, intValue);
+		constexpr unsigned int int_value = 0;
+		assign_value_to_variable(name, int_value);
 	}
 
-	return m_commandPointer - command_start;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(const std::string& name, const unsigned int value) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, const unsigned int value) {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* variable = m_memory->getVariable(name);
-	variable->setValue(value);
-	variable->setIsInitialized(true);
+	Variable* variable = m_memory->get_variable(name);
+	variable->set_value(value);
+	variable->set_is_initialized(true);
 
-	unsigned int variableMemoryPointer = m_memory->getVariable(name)->getMemoryPosition();
-	writeCode("STORE", variableMemoryPointer);
+	const unsigned int variable_memory_position = m_memory->get_variable(name)->get_memory_position();
+	write_code("STORE", variable_memory_position);
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::assignValueToVariable(const std::string& name, Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
 
-	unsigned int value = variable->getValue();
-	Variable* var = m_memory->getVariable(name);
-	var->setValue(value);
-	var->setIsInitialized(true);
+	const unsigned int value = variable->get_value();
+	Variable* var = m_memory->get_variable(name);
+	var->set_value(value);
+	var->set_is_initialized(true);
 
-	unsigned int variableMemoryPointer = m_memory->getVariable(name)->getMemoryPosition();
-	writeCode("STORE", variableMemoryPointer);
+	const unsigned int variable_memory_position = m_memory->get_variable(name)->get_memory_position();
+	write_code("STORE", variable_memory_position);
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::divideAccumulatorByHalf() {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::divide_accumulator_by_half() {
+	const unsigned int command_start = m_command_pointer;
 
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	accumulator->setValue(accumulator->getValue() / 2);
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	accumulator->set_value(accumulator->get_value() / 2);
 
-	writeCode("HALF");
+	write_code("HALF");
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::generateInitialCodeForProcedure() {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::generate_initial_code_for_procedure() {
+	const unsigned int command_start = m_command_pointer;
 
-	writeCode("JUMP", m_commandPointer);
+	write_code("JUMP", m_command_pointer);
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::generateProcedureEndCode(Procedure* procedure) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::generate_procedure_end_code(Procedure* procedure) {
+	const unsigned int command_start = m_command_pointer;
 	
-	procedure->setProcedureStartPoint(commandStart - procedure->getCodeSize());
+	procedure->set_procedure_start_point(command_start - procedure->get_code_size());
 
-	std::vector<Variable*>& procedureVariables = procedure->getProcedureVariables();
-	for(Variable* variable : procedureVariables) {
-		if(variable->isPointer()) {
-			unsigned int pointedVariableMemoryPosition = variable->getPointedVariable()->getMemoryPosition();
-			loadValueToAccumulator(variable);
-			storeValueFromAccumulatorToPointedVariable(variable);
+	const std::vector<Variable*>& procedure_variables = procedure->get_procedure_variables();
+	for(Variable* variable : procedure_variables) {
+		if(variable->is_pointer()) {
+			load_value_to_accumulator(variable);
+			store_value_from_accumulator_to_pointed_variable(variable);
 		}
 	}
 
-	writeCode("JUMPI", procedure->getProcedureVariables()[0]->getMemoryPosition());
-	procedure->setProcedureEndingJumpPosition(procedure->getProcedureVariables()[0]->getMemoryPosition());
+	write_code("JUMPI", procedure->get_procedure_variables().at(0)->get_memory_position());
+	procedure->set_procedure_ending_jump_position(procedure->get_procedure_variables().at(0)->get_memory_position());
 	
-	changeCode(procedure->getProcedureStartPoint() - 1, "JUMP", m_commandPointer);
+	change_code(procedure->get_procedure_start_point() - 1, "JUMP", m_command_pointer);
 	
-	return m_commandPointer - commandStart + procedure->getCodeSize();
+	return m_command_pointer - command_start + procedure->get_code_size();
 }
 
-unsigned int CodeGenerator::executeProcedure(const std::string& procedureName, const std::vector<Variable*>& procedureExecutionVariables) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::execute_procedure(const std::string& procedure_name, const std::vector<Variable*>& procedure_execution_variables) {
+	const unsigned int command_start = m_command_pointer;
 	
 	Procedure* procedure = nullptr;
-	std::vector<Procedure*>& procedures = m_memory->getProcedures();
+	const std::vector<Procedure*>& procedures = m_memory->get_procedures();
 	for(Procedure* proc : procedures) {
-		if(proc->getName() == procedureName) {
+		if(proc->get_name() == procedure_name) {
 			procedure = proc;
 			break;
 		}
 	}
 
 	if(procedure != nullptr) {
-		std::vector<Variable*>* procedurePointers = procedure->getProcedurePointers();
+		const std::vector<Variable*>& procedure_pointers = procedure->get_procedure_pointers();
 		
 		unsigned int i = 0;
-		for(std::vector<Variable*>::iterator it = procedurePointers->begin(); it != procedurePointers->end(); it++) {
-			Variable* pointer = *it;
-			Variable* procExecVar = procedureExecutionVariables[i];
-			procExecVar->setIsInitialized(true);
-			setValueToAccumulator(procExecVar->getMemoryPosition());
-			storeValueFromAccumulator(pointer->getPointedVariable());
-			loadValueToAccumulator(procExecVar);
-			storeValueFromAccumulator(pointer);
+		for(auto* pointer : procedure_pointers) {
+			Variable* proc_exec_var = procedure_execution_variables.at(i);
+			proc_exec_var->set_is_initialized(true);
+			set_value_to_accumulator(proc_exec_var->get_memory_position());
+			store_value_from_accumulator(pointer->get_pointed_variable());
+			load_value_to_accumulator(proc_exec_var);
+			store_value_from_accumulator(pointer);
 			
 			i++;
 		}
 		
-		setValueToAccumulator(m_commandPointer + 3);
-		storeValueFromAccumulator(procedure->getProcedureVariables()[0]);
+		set_value_to_accumulator(m_command_pointer + 3);
+		store_value_from_accumulator(procedure->get_procedure_variables().at(0));
 
-		writeCode("JUMP", procedure->getProcedureStartPoint());
+		write_code("JUMP", procedure->get_procedure_start_point());
 		
 	} else {
-		printf("Error at line %d: Procedure %s doesn't exist\n", yylineno, procedureName.c_str());
+		printf("Error at line %d: Procedure %s doesn't exist\n", yylineno, procedure_name.c_str());
 		exit(1);
 	}
 
-	m_memory->clearProcedureExecutionVariables();
+	m_memory->clear_procedure_execution_variables();
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::ifCondition(Condition* condition, unsigned int commandsLength) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::if_condition(const Condition* condition, unsigned int commands_length) {
+	const unsigned int command_start = m_command_pointer;
 
 	// change value of "if false" jump in condition's code
-	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
-	std::istringstream iss(codeToChange);
+	const std::string code_to_change = m_code.at(condition->jump_if_false_position);
+	std::istringstream iss(code_to_change);
 	std::string starts;
 	iss >> starts;
 	if(starts == "JUMP") {
-		changeCode(condition->jumpIfFalsePosition, "JUMP", commandStart);
+		change_code(condition->jump_if_false_position, "JUMP", command_start);
 	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfFalsePosition, "JPOS", commandStart);
+		change_code(condition->jump_if_false_position, "JPOS", command_start);
 	} else  {
-		changeCode(condition->jumpIfFalsePosition, "JZERO", commandStart);
+		change_code(condition->jump_if_false_position, "JZERO", command_start);
 	}
 
-	return m_commandPointer - commandStart + condition->conditionCodeSize;
+	const unsigned int condition_code_size = condition->condition_code_size;
+	delete condition;
+
+	return m_command_pointer - command_start + condition_code_size;
 }
 
-unsigned int CodeGenerator::ifElseCondition(Condition* condition, unsigned int commands1Length, unsigned int commands2Length) {
-	unsigned int commandStart = m_commandPointer;
-	changeCode(commandStart - commands2Length - 1, "JUMP", commandStart);
+unsigned int CodeGenerator::if_else_condition(const Condition* condition, unsigned int commands1_length, const unsigned int commands2_length) {
+	const unsigned int command_start = m_command_pointer;
+	change_code(command_start - commands2_length - 1, "JUMP", command_start);
 	
-	unsigned int commandIfFalseStart = m_commandPointer;
+	const unsigned int command_if_false_start = m_command_pointer;
 
-	std::string jumpIfFalseCodeToChange = m_code.at(condition->jumpIfFalsePosition);
-	std::istringstream iss1(jumpIfFalseCodeToChange);
-	std::string starts;
-	iss1 >> starts;
-	if(starts == "JUMP") {
-		changeCode(condition->jumpIfFalsePosition, "JUMP", commandIfFalseStart - commands2Length);
-	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfFalsePosition, "JPOS", commandIfFalseStart - commands2Length);
-	} else  {
-		changeCode(condition->jumpIfFalsePosition, "JZERO", commandIfFalseStart - commands2Length);
-	}
-
-	return m_commandPointer - commandStart + condition->conditionCodeSize + 1;
-}
-
-unsigned int CodeGenerator::generateMiddleIfElseJump() {
-	unsigned int commandStart = m_commandPointer;
-
-	writeCode("JUMP", m_commandPointer);
-
-	return m_commandPointer - commandStart;
-}
-
-unsigned int CodeGenerator::whileLoop(Condition* condition, unsigned int commandsLength) {
-	unsigned int commandStart = m_commandPointer;
-
-	writeCode("JUMP", commandStart - commandsLength - condition->conditionCodeSize);
-
-	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
-	std::istringstream iss(codeToChange);
+	const std::string jump_if_false_code_to_change = m_code.at(condition->jump_if_false_position);
+	std::istringstream iss(jump_if_false_code_to_change);
 	std::string starts;
 	iss >> starts;
 	if(starts == "JUMP") {
-		changeCode(condition->jumpIfFalsePosition, "JUMP", m_commandPointer);
+		change_code(condition->jump_if_false_position, "JUMP", command_if_false_start - commands2_length);
 	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfFalsePosition, "JPOS", m_commandPointer);
+		change_code(condition->jump_if_false_position, "JPOS", command_if_false_start - commands2_length);
 	} else  {
-		changeCode(condition->jumpIfFalsePosition, "JZERO", m_commandPointer);
+		change_code(condition->jump_if_false_position, "JZERO", command_if_false_start - commands2_length);
 	}
 
-	return m_commandPointer - commandStart + condition->conditionCodeSize;
+	const unsigned int condition_code_size = condition->condition_code_size;
+	delete condition;
+
+	return m_command_pointer - command_start + condition_code_size + 1;
 }
 
-unsigned int CodeGenerator::repeatUntilLoop(Condition* condition, unsigned int commandsLength) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::generate_middle_if_else_jump() {
+	const unsigned int command_start = m_command_pointer;
 
-	std::string codeToChange = m_code.at(condition->jumpIfFalsePosition);
-	std::istringstream iss(codeToChange);
+	write_code("JUMP", m_command_pointer);
+
+	return m_command_pointer - command_start;
+}
+
+unsigned int CodeGenerator::while_loop(const Condition* condition, const unsigned int commands_length) {
+	const unsigned int command_start = m_command_pointer;
+
+	write_code("JUMP", command_start - commands_length - condition->condition_code_size);
+
+	const std::string code_to_change = m_code.at(condition->jump_if_false_position);
+	std::istringstream iss(code_to_change);
 	std::string starts;
 	iss >> starts;
 	if(starts == "JUMP") {
-		changeCode(condition->jumpIfFalsePosition, "JUMP", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		change_code(condition->jump_if_false_position, "JUMP", m_command_pointer);
 	} else if(starts == "JPOS") {
-		changeCode(condition->jumpIfFalsePosition, "JPOS", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		change_code(condition->jump_if_false_position, "JPOS", m_command_pointer);
 	} else  {
-		changeCode(condition->jumpIfFalsePosition, "JZERO", m_commandPointer - commandsLength - condition->conditionCodeSize);
+		change_code(condition->jump_if_false_position, "JZERO", m_command_pointer);
 	}
 
-	return m_commandPointer - commandStart + condition->conditionCodeSize;
+	const unsigned int condition_code_size = condition->condition_code_size;
+	delete condition;
+
+	return m_command_pointer - command_start + condition_code_size;
 }
 
-unsigned int CodeGenerator::readValue(const std::string& variableName) {
-	unsigned int commandStart = m_commandPointer;
-	Variable* variable = m_memory->getVariable(variableName);
-	variable->setIsInitialized(true);
+unsigned int CodeGenerator::repeat_until_loop(const Condition* condition, const unsigned int commands_length) {
+	const unsigned int command_start = m_command_pointer;
 
-	writeCode("GET", variable->getMemoryPosition());
+	const std::string code_to_change = m_code.at(condition->jump_if_false_position);
+	std::istringstream iss(code_to_change);
+	std::string starts;
+	iss >> starts;
+	if(starts == "JUMP") {
+		change_code(condition->jump_if_false_position, "JUMP", m_command_pointer - commands_length - condition->condition_code_size);
+	} else if(starts == "JPOS") {
+		change_code(condition->jump_if_false_position, "JPOS", m_command_pointer - commands_length - condition->condition_code_size);
+	} else  {
+		change_code(condition->jump_if_false_position, "JZERO", m_command_pointer - commands_length - condition->condition_code_size);
+	}
 
-	return m_commandPointer - commandStart;
+	const unsigned int condition_code_size = condition->condition_code_size;
+	delete condition;
+
+	return m_command_pointer - command_start + condition_code_size;
 }
 
-unsigned int CodeGenerator::printOutValue(Variable* variable) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int variableMemoryPointer = variable->getMemoryPosition();
+unsigned int CodeGenerator::read_value(const std::string& variable_name) {
+	const unsigned int command_start = m_command_pointer;
+	Variable* variable = m_memory->get_variable(variable_name);
+	variable->set_is_initialized(true);
+
+	write_code("GET", variable->get_memory_position());
+
+	return m_command_pointer - command_start;
+}
+
+unsigned int CodeGenerator::print_out_value(Variable* variable) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int variable_memory_position = variable->get_memory_position();
 	
-	if(variable->getName().empty()) {
-		setValueToAccumulator(variable->getValue());
-		writeCode("PUT", 0);
-		return m_commandPointer - commandStart;
+	if(variable->get_name().empty()) {
+		set_value_to_accumulator(variable->get_value());
+		write_code("PUT", 0);
+		return m_command_pointer - command_start;
 	}
 
-	if(variable->isInitialized()) {
-		writeCode("PUT", variableMemoryPointer);
+	if(variable->is_initialized()) {
+		write_code("PUT", variable_memory_position);
 	} else {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, variable->getName().c_str());
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, variable->get_name().c_str());
 		exit(1);
 	}
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
 unsigned int CodeGenerator::add(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = aVal + bVal;
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = a_val + b_val;
 	
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	if(a->getName().empty() && b->getName().empty()) {
-		Variable* accumulator = m_memory->getVariableFromMemory(0);
-		setValueToAccumulator(result);
+	if(a->get_name().empty() && b->get_name().empty()) {
+		Variable* accumulator = m_memory->get_variable_from_memory(0);
+		set_value_to_accumulator(result);
 
-	} else if(a->getName().empty()) {
-		setValueToAccumulator(a);
-		addValueToAccumulator(b);
+	} else if(a->get_name().empty()) {
+		set_value_to_accumulator(a);
+		add_value_to_accumulator(b);
 
-	} else if(b->getName().empty()) {
-		setValueToAccumulator(b);
-		addValueToAccumulator(a);
+	} else if(b->get_name().empty()) {
+		set_value_to_accumulator(b);
+		add_value_to_accumulator(a);
 
 	} else {
-		loadValueToAccumulator(a);
-		addValueToAccumulator(b);
+		load_value_to_accumulator(a);
+		add_value_to_accumulator(b);
 
 	}
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::sub(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	if(a->getName().empty() && b->getName().empty()) {
-		unsigned int aVal = a->getValue();
-		unsigned int bVal = b->getValue();
-		unsigned int result = bVal > aVal ? 0 : aVal - bVal;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		const unsigned int a_val = a->get_value();
+		const unsigned int b_val = b->get_value();
+		const unsigned int result = b_val > a_val ? 0 : a_val - b_val;
 
-		Variable* accumulator = m_memory->getVariableFromMemory(0);
-		setValueToAccumulator(result);
+		Variable* accumulator = m_memory->get_variable_from_memory(0);
+		set_value_to_accumulator(result);
 
-	} else if(a->getName().empty()) {
-		setValueToAccumulator(a);
-		subValueFromAccumulator(b);
+	} else if(a->get_name().empty()) {
+		set_value_to_accumulator(a);
+		sub_value_from_accumulator(b);
 
-	} else if(b->getName().empty()) {
-		Variable* tempVariable = m_memory->getVariableFromMemory(1);
-		tempVariable->setValue(b->getValue());
-		setValueToAccumulator(tempVariable);
-		storeValueFromAccumulator(tempVariable);
-		loadValueToAccumulator(a);
-		subValueFromAccumulator(tempVariable);
+	} else if(b->get_name().empty()) {
+		Variable* temp_variable = m_memory->get_variable_from_memory(1);
+		temp_variable->set_value(b->get_value());
+		set_value_to_accumulator(temp_variable);
+		store_value_from_accumulator(temp_variable);
+		load_value_to_accumulator(a);
+		sub_value_from_accumulator(temp_variable);
 
 	} else {
-		loadValueToAccumulator(a);
-		subValueFromAccumulator(b);
+		load_value_to_accumulator(a);
+		sub_value_from_accumulator(b);
 
 	}
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::mul(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
+unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
 
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
 	
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		unsigned int result = aVal * bVal;
-		setValueToAccumulator(result);
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	if(a->get_name().empty() && b->get_name().empty()) {
+		const unsigned int result = a_val * b_val;
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
-		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
-		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
-		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
-		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
-		Variable* oneVariable = m_memory->getVariableFromMemory(7);
+		constexpr unsigned int zero = 0;
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
+		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
+		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
+		Variable* temp4_variable = m_memory->get_variable_from_memory(4);
+		Variable* one_variable = m_memory->get_variable_from_memory(7);
 		
 		// set up required variables
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
 		} else {
-			loadValueToAccumulator(a);
+			load_value_to_accumulator(a);
 		}
-		storeValueFromAccumulator(temp1Variable);
+		store_value_from_accumulator(temp1_variable);
 
 		// multiplier and remainder of multiplier
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
 		} else {
-			loadValueToAccumulator(b);
+			load_value_to_accumulator(b);
 		}
-		storeValueFromAccumulator(temp2Variable);
+		store_value_from_accumulator(temp2_variable);
 
-		setValueToAccumulator(zero);
-		storeValueFromAccumulator(temp3Variable);
+		set_value_to_accumulator(zero);
+		store_value_from_accumulator(temp3_variable);
 
-		unsigned int startOfTheLoop = m_commandPointer;
-		loadValueToAccumulator(temp2Variable);
-		writeCode("JZERO", m_commandPointer + 24);
+		const unsigned int start_of_the_loop = m_command_pointer;
+		load_value_to_accumulator(temp2_variable);
+		write_code("JZERO", m_command_pointer + 24);
 
 		// check if Y is odd
-		subValueFromAccumulator(oneVariable);
-		writeCode("JZERO", m_commandPointer + 19);
+		sub_value_from_accumulator(one_variable);
+		write_code("JZERO", m_command_pointer + 19);
 
-		loadValueToAccumulator(temp2Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp4Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp4Variable);
-		loadValueToAccumulator(temp2Variable);
-		subValueFromAccumulator(temp4Variable);
-		writeCode("JZERO", m_commandPointer + 4);
+		load_value_to_accumulator(temp2_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp4_variable);
+		add_value_to_accumulator(temp4_variable);
+		store_value_from_accumulator(temp4_variable);
+		load_value_to_accumulator(temp2_variable);
+		sub_value_from_accumulator(temp4_variable);
+		write_code("JZERO", m_command_pointer + 4);
 
 		//if Y is odd, then add X to the result
-		loadValueToAccumulator(temp3Variable);
-		addValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp3Variable);
+		load_value_to_accumulator(temp3_variable);
+		add_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp3_variable);
 
-		loadValueToAccumulator(temp1Variable);
-		addValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp1Variable);
+		load_value_to_accumulator(temp1_variable);
+		add_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp1_variable);
 
-		loadValueToAccumulator(temp2Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp2Variable);
-		writeCode("JUMP", startOfTheLoop);
+		load_value_to_accumulator(temp2_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp2_variable);
+		write_code("JUMP", start_of_the_loop);
 
-		loadValueToAccumulator(temp3Variable);
-		addValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp3Variable);
+		load_value_to_accumulator(temp3_variable);
+		add_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp3_variable);
 
-		loadValueToAccumulator(temp3Variable);
+		load_value_to_accumulator(temp3_variable);
 	}
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::div(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (bVal != 0)? aVal % bVal : 0;
+unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = (b_val != 0)? a_val % b_val : 0;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	if(a->get_name().empty() && b->get_name().empty()) {
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
-		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
-		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
-		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
-		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
-		Variable* oneVariable = m_memory->getVariableFromMemory(7);
+		constexpr unsigned int zero = 0;
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
+		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
+		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
+		Variable* temp4_variable = m_memory->get_variable_from_memory(4);
+		Variable* temp5_variable = m_memory->get_variable_from_memory(5);
+		Variable* temp6_variable = m_memory->get_variable_from_memory(6);
+		Variable* one_variable = m_memory->get_variable_from_memory(7);
 
 		// set up required variables
 		// multiplicand and current power of 2 multiplicand equivalent
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
 		} else {
-			loadValueToAccumulator(a);
+			load_value_to_accumulator(a);
 		}
-		storeValueFromAccumulator(temp2Variable);
-		storeValueFromAccumulator(temp5Variable);
+		store_value_from_accumulator(temp2_variable);
+		store_value_from_accumulator(temp5_variable);
 
 		// multiplier and remainder of multiplier
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
 		} else {
-			loadValueToAccumulator(b);
+			load_value_to_accumulator(b);
 		}
-		storeValueFromAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
+		store_value_from_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
 		
 		// current power of 2
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
 		
 		// result
-		setValueToAccumulator(zero);
-		storeValueFromAccumulator(temp6Variable);
+		set_value_to_accumulator(zero);
+		store_value_from_accumulator(temp6_variable);
 
 		// check if divisor is 0 or bigger than dividend
-		loadValueToAccumulator(temp1Variable);
-		unsigned int jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 54);
-		subValueFromAccumulator(temp2Variable);
-		writeCode("JZERO", jumpVariable + 5);
-		setValueToAccumulator(zero);
-		writeCode("JUMP", jumpVariable + 54);
+		load_value_to_accumulator(temp1_variable);
+		unsigned int jump_variable = m_command_pointer;
+		write_code("JZERO", jump_variable + 54);
+		sub_value_from_accumulator(temp2_variable);
+		write_code("JZERO", jump_variable + 5);
+		set_value_to_accumulator(zero);
+		write_code("JUMP", jump_variable + 54);
 
 		// start of the loop
-		unsigned int startOfTheMultiplyLoop = m_commandPointer;
+		const unsigned int start_of_the_multiplying_loop = m_command_pointer;
 
-		// check if current value >= remainding multiplier
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
+		// check if current value >= remaining multiplier
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
 		
-		// jump to position where we can check if value > or == remainding multiplier
-		jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 8);
+		// jump to position where we can check if value > or == remaining multiplier
+		write_code("JZERO", m_command_pointer + 8);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(temp3Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp3Variable);
+		load_value_to_accumulator(temp3_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp3_variable);
 
-		loadValueToAccumulator(temp4Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp4Variable);
+		load_value_to_accumulator(temp4_variable);
+		add_value_to_accumulator(temp4_variable);
+		store_value_from_accumulator(temp4_variable);
 
 		// go back to the start of the loop
-		writeCode("JUMP", startOfTheMultiplyLoop);
+		write_code("JUMP", start_of_the_multiplying_loop);
 
-		loadValueToAccumulator(temp4Variable);
-		subValueFromAccumulator(temp5Variable);
-
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 31);
+		load_value_to_accumulator(temp4_variable);
+		sub_value_from_accumulator(temp5_variable);
 		
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp5Variable);
-
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp6Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JUMP", jumpVariable + 31);
-
-		unsigned int addToResultJumpPosition = m_commandPointer;
-		loadValueToAccumulator(temp4Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp4Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 3);
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp5Variable);
-
-		loadValueToAccumulator(temp3Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp3Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 3);
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp6Variable);
-
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
-
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-
-		writeCode("JUMP", startOfTheMultiplyLoop);
+		write_code("JPOS", m_command_pointer + 31);
 		
-		loadValueToAccumulator(temp3Variable);
-		subValueFromAccumulator(oneVariable);
-		jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 5);
-		writeCode("JUMP", addToResultJumpPosition);
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
+		store_value_from_accumulator(temp5_variable);
 
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp6Variable);
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp6_variable);
+		write_code("JUMP", m_command_pointer + 31);
 
-		loadValueToAccumulator(temp6Variable);
+		const unsigned int add_to_result_jump_position = m_command_pointer;
+		load_value_to_accumulator(temp4_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp4_variable);
+		write_code("JPOS", m_command_pointer + 3);
+		load_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
+		store_value_from_accumulator(temp5_variable);
+
+		load_value_to_accumulator(temp3_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp3_variable);
+		write_code("JPOS", m_command_pointer + 3);
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp6_variable);
+
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
+
+		load_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
+
+		write_code("JUMP", start_of_the_multiplying_loop);
+		
+		load_value_to_accumulator(temp3_variable);
+		sub_value_from_accumulator(one_variable);
+		write_code("JZERO", m_command_pointer + 5);
+		write_code("JUMP", add_to_result_jump_position);
+
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp4_variable);
+		store_value_from_accumulator(temp6_variable);
+
+		load_value_to_accumulator(temp6_variable);
 	}
 	 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::mod(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (bVal != 0)? aVal % bVal : 0;
+unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	Variable* accumulator = m_memory->get_variable_from_memory(0);
+	if(a->get_name().empty() && b->get_name().empty()) {
+		const unsigned int result = (b_val != 0)? a_val % b_val : 0;
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
-		Variable* temp3Variable = m_memory->getVariableFromMemory(3);
-		Variable* temp4Variable = m_memory->getVariableFromMemory(4);
-		Variable* temp5Variable = m_memory->getVariableFromMemory(5);
-		Variable* temp6Variable = m_memory->getVariableFromMemory(6);
-		Variable* oneVariable = m_memory->getVariableFromMemory(7);
+		constexpr unsigned int zero = 0;
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
+		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
+		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
+		Variable* temp4_variable = m_memory->get_variable_from_memory(4);
+		Variable* temp5_variable = m_memory->get_variable_from_memory(5);
+		Variable* temp6_variable = m_memory->get_variable_from_memory(6);
+		Variable* one_variable = m_memory->get_variable_from_memory(7);
 
 		// set up required variables
 		// multiplicand and current power of 2 multiplicand equivalent
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
 		} else {
-			loadValueToAccumulator(a);
+			load_value_to_accumulator(a);
 		}
-		storeValueFromAccumulator(temp2Variable);
-		storeValueFromAccumulator(temp5Variable);
+		store_value_from_accumulator(temp2_variable);
+		store_value_from_accumulator(temp5_variable);
 
 		// multiplier and remainder of multiplier
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
 		} else {
-			loadValueToAccumulator(b);
+			load_value_to_accumulator(b);
 		}
-		storeValueFromAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
+		store_value_from_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
 		
 		// current power of 2
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
 		
 		// result
-		setValueToAccumulator(zero);
-		storeValueFromAccumulator(temp6Variable);
+		set_value_to_accumulator(zero);
+		store_value_from_accumulator(temp6_variable);
 
 		// check if divisor is 0 or bigger than dividend
-		loadValueToAccumulator(temp1Variable);
-		unsigned int jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 54);
-		subValueFromAccumulator(temp2Variable);
-		writeCode("JZERO", jumpVariable + 5);
-		loadValueToAccumulator(temp2Variable);
-		writeCode("JPOS", jumpVariable + 54);
+		load_value_to_accumulator(temp1_variable);
+		unsigned int jump_variable = m_command_pointer;
+		write_code("JZERO", jump_variable + 54);
+		sub_value_from_accumulator(temp2_variable);
+		write_code("JZERO", jump_variable + 5);
+		load_value_to_accumulator(temp2_variable);
+		write_code("JPOS", jump_variable + 54);
 
 		// start of the loop
-		unsigned int startOfTheMultiplyLoop = m_commandPointer;
+		const unsigned int start_of_the_multiplying_loop = m_command_pointer;
 
-		// check if current value >= remainding multiplier
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
+		// check if current value >= remaining multiplier
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
 		
-		// jump to position where we can check if value > or == remainding multiplier
-		jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 8);
+		// jump to position where we can check if value > or == remaining multiplier
+		write_code("JZERO", m_command_pointer + 8);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
-		loadValueToAccumulator(temp3Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp3Variable);
+		load_value_to_accumulator(temp3_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp3_variable);
 
-		loadValueToAccumulator(temp4Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp4Variable);
+		load_value_to_accumulator(temp4_variable);
+		add_value_to_accumulator(temp4_variable);
+		store_value_from_accumulator(temp4_variable);
 
 		// go back to the start of the loop
-		writeCode("JUMP", startOfTheMultiplyLoop);
+		write_code("JUMP", start_of_the_multiplying_loop);
 
-		loadValueToAccumulator(temp4Variable);
-		subValueFromAccumulator(temp5Variable);
-
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 31);
+		load_value_to_accumulator(temp4_variable);
+		sub_value_from_accumulator(temp5_variable);
 		
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp5Variable);
-
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp6Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JUMP", jumpVariable + 31);
-
-		unsigned int addToResultJumpPosition = m_commandPointer;
-		loadValueToAccumulator(temp4Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp4Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 3);
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-		loadValueToAccumulator(temp5Variable);
-		subValueFromAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp5Variable);
-
-		loadValueToAccumulator(temp3Variable);
-		divideAccumulatorByHalf();
-		storeValueFromAccumulator(temp3Variable);
-		jumpVariable = m_commandPointer;
-		writeCode("JPOS", jumpVariable + 3);
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp3Variable);
-		storeValueFromAccumulator(temp6Variable);
-
-		setValueToAccumulator(1);
-		storeValueFromAccumulator(temp3Variable);
-
-		loadValueToAccumulator(temp1Variable);
-		storeValueFromAccumulator(temp4Variable);
-
-		writeCode("JUMP", startOfTheMultiplyLoop);
+		write_code("JPOS", m_command_pointer + 31);
 		
-		loadValueToAccumulator(temp3Variable);
-		subValueFromAccumulator(oneVariable);
-		jumpVariable = m_commandPointer;
-		writeCode("JZERO", jumpVariable + 5);
-		writeCode("JUMP", addToResultJumpPosition);
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
+		store_value_from_accumulator(temp5_variable);
 
-		loadValueToAccumulator(temp6Variable);
-		addValueToAccumulator(temp4Variable);
-		storeValueFromAccumulator(temp6Variable);
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp6_variable);
+		write_code("JUMP", m_command_pointer + 31);
 
-		loadValueToAccumulator(temp5Variable);
+		const unsigned int add_to_result_jump_position = m_command_pointer;
+		load_value_to_accumulator(temp4_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp4_variable);
+		write_code("JPOS", m_command_pointer + 3);
+		load_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
+		load_value_to_accumulator(temp5_variable);
+		sub_value_from_accumulator(temp4_variable);
+		store_value_from_accumulator(temp5_variable);
+
+		load_value_to_accumulator(temp3_variable);
+		divide_accumulator_by_half();
+		store_value_from_accumulator(temp3_variable);
+		write_code("JPOS", m_command_pointer + 3);
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp3_variable);
+		store_value_from_accumulator(temp6_variable);
+
+		set_value_to_accumulator(1);
+		store_value_from_accumulator(temp3_variable);
+
+		load_value_to_accumulator(temp1_variable);
+		store_value_from_accumulator(temp4_variable);
+
+		write_code("JUMP", start_of_the_multiplying_loop);
+		
+		load_value_to_accumulator(temp3_variable);
+		sub_value_from_accumulator(one_variable);
+		write_code("JZERO", m_command_pointer + 5);
+		write_code("JUMP", add_to_result_jump_position);
+
+		load_value_to_accumulator(temp6_variable);
+		add_value_to_accumulator(temp4_variable);
+		store_value_from_accumulator(temp6_variable);
+
+		load_value_to_accumulator(temp5_variable);
 	}
 
-	return m_commandPointer - commandStart;
+	return m_command_pointer - command_start;
 }
 
 Condition* CodeGenerator::equal(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal == bVal)? 1 : 0;
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition, jumpIfFalsePosition2, jumpIfTruePosition;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position, jump_if_true_position;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		const unsigned int result = (a_val == b_val)? 1 : 0;
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
+		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
-			storeValueFromAccumulator(temp1Variable);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(a);
-			storeValueFromAccumulator(temp1Variable);
+			load_value_to_accumulator(a);
+			store_value_from_accumulator(temp1_variable);
 		}
 
 		// multiplier and remainder of multiplier
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
-			storeValueFromAccumulator(temp2Variable);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
+			store_value_from_accumulator(temp2_variable);
 		} else {
-			loadValueToAccumulator(b);
-			storeValueFromAccumulator(temp2Variable);
+			load_value_to_accumulator(b);
+			store_value_from_accumulator(temp2_variable);
 		}
 
-		subValueFromAccumulator(temp1Variable);
-		writeCode("JPOS", m_commandPointer + 5);
+		sub_value_from_accumulator(temp1_variable);
+		write_code("JPOS", m_command_pointer + 5);
 
-		loadValueToAccumulator(temp1Variable);
-		subValueFromAccumulator(temp2Variable);
+		load_value_to_accumulator(temp1_variable);
+		sub_value_from_accumulator(temp2_variable);
 		
-		writeCode("JPOS", m_commandPointer + 2);
+		write_code("JPOS", m_command_pointer + 2);
 		
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 2);
+		jump_if_true_position = m_command_pointer;
+		write_code("JUMP", jump_if_true_position + 2);
 		
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfFalsePosition + 1);
+		jump_if_false_position = m_command_pointer;
+		write_code("JUMP", jump_if_false_position + 1);
+
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
-Condition* CodeGenerator::nequal(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal != bVal)? 1 : 0;
+Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position, jump_if_true_position;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		const unsigned int result = (a_val != b_val)? 1 : 0;
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
+		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
-			storeValueFromAccumulator(temp1Variable);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(a);
-			storeValueFromAccumulator(temp1Variable);
+			load_value_to_accumulator(a);
+			store_value_from_accumulator(temp1_variable);
 		}
 
 		// multiplier and remainder of multiplier
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
-			storeValueFromAccumulator(temp2Variable);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
+			store_value_from_accumulator(temp2_variable);
 		} else {
-			loadValueToAccumulator(b);
-			storeValueFromAccumulator(temp2Variable);
+			load_value_to_accumulator(b);
+			store_value_from_accumulator(temp2_variable);
 		}
 
-		subValueFromAccumulator(temp1Variable);
-		writeCode("JPOS", m_commandPointer + 4);
+		sub_value_from_accumulator(temp1_variable);
+		write_code("JPOS", m_command_pointer + 4);
 
-		loadValueToAccumulator(temp1Variable);
-		subValueFromAccumulator(temp2Variable);
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfTruePosition + 2);
+		load_value_to_accumulator(temp1_variable);
+		sub_value_from_accumulator(temp2_variable);
+		jump_if_true_position = m_command_pointer;
+		write_code("JPOS", jump_if_true_position + 2);
 		
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfFalsePosition + 1);
+		jump_if_false_position = m_command_pointer;
+		write_code("JUMP", jump_if_false_position + 1);
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
 Condition* CodeGenerator::greater(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal > bVal)? 1 : 0;
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = (a_val > b_val)? 1 : 0;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position, jump_if_true_position;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
-			storeValueFromAccumulator(temp2Variable);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(b);
-			storeValueFromAccumulator(temp2Variable);
+			load_value_to_accumulator(b);
+			store_value_from_accumulator(temp1_variable);
 		}
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
 		} else {
-			loadValueToAccumulator(a);
+			load_value_to_accumulator(a);
 		}
 
-		subValueFromAccumulator(temp2Variable);
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JZERO", jumpIfFalsePosition + 2);
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 1);
+		sub_value_from_accumulator(temp1_variable);
+		jump_if_false_position = m_command_pointer;
+		write_code("JZERO", jump_if_false_position + 2);
+		jump_if_true_position = m_command_pointer;
+		write_code("JUMP", jump_if_true_position + 1);
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
 Condition* CodeGenerator::less(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal < bVal)? 1 : 0;
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = (a_val < b_val)? 1 : 0;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position, jump_if_true_position;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
-			storeValueFromAccumulator(temp2Variable);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(a);
-			storeValueFromAccumulator(temp2Variable);
+			load_value_to_accumulator(a);
+			store_value_from_accumulator(temp1_variable);
 		}
 
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
 		} else {
-			loadValueToAccumulator(b);
+			load_value_to_accumulator(b);
 		}
 
-		subValueFromAccumulator(temp2Variable);
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JZERO", jumpIfFalsePosition + 2);
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 1);
+		sub_value_from_accumulator(temp1_variable);
+		jump_if_false_position = m_command_pointer;
+		write_code("JZERO", jump_if_false_position + 2);
+		jump_if_true_position = m_command_pointer;
+		write_code("JUMP", jump_if_true_position + 1);
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
-Condition* CodeGenerator::greq(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal >= bVal)? 1 : 0;
+Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = (a_val >= b_val)? 1 : 0;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition, jumpIfTruePosition;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position, jump_if_true_position;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
-			storeValueFromAccumulator(temp1Variable);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(a);
-			storeValueFromAccumulator(temp1Variable);
+			load_value_to_accumulator(a);
+			store_value_from_accumulator(temp1_variable);
 		}
 		
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
 		} else {
-			loadValueToAccumulator(b);
+			load_value_to_accumulator(b);
 		}
 		
-		subValueFromAccumulator(temp1Variable);
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfFalsePosition + 2);
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 1);
+		sub_value_from_accumulator(temp1_variable);
+		jump_if_false_position = m_command_pointer;
+		write_code("JPOS", jump_if_false_position + 2);
+		jump_if_true_position = m_command_pointer;
+		write_code("JUMP", jump_if_true_position + 1);
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
-Condition* CodeGenerator::leq(Variable* a, Variable* b) {
-	unsigned int commandStart = m_commandPointer;
-	unsigned int aVal = a->getValue();
-	unsigned int bVal = b->getValue();
-	unsigned int result = (aVal >= bVal)? 1 : 0;
+Condition* CodeGenerator::lesser_or_equal(Variable* a, Variable* b) {
+	const unsigned int command_start = m_command_pointer;
+	const unsigned int a_val = a->get_value();
+	const unsigned int b_val = b->get_value();
+	const unsigned int result = (a_val >= b_val)? 1 : 0;
 
-	if(!a->getName().empty() && !a->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->getName().c_str());
+	if(!a->get_name().empty() && !a->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
 		exit(1);
 	}
 
-	if(!b->getName().empty() && !b->isInitialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->getName().c_str());
+	if(!b->get_name().empty() && !b->is_initialized()) {
+		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
 		exit(1);
 	}
 
-	unsigned int jumpIfFalsePosition = 0, jumpIfTruePosition = 0;
-	unsigned int zero = 0;
-	Variable* accumulator = m_memory->getVariableFromMemory(0);
-	if(a->getName().empty() && b->getName().empty()) {
-		setValueToAccumulator(result);
+	unsigned int jump_if_false_position = 0, jump_if_true_position = 0;
+	if(a->get_name().empty() && b->get_name().empty()) {
+		set_value_to_accumulator(result);
 	} else {
-		Variable* temp1Variable = m_memory->getVariableFromMemory(1);
-		Variable* temp2Variable = m_memory->getVariableFromMemory(2);
+		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 
-		if(b->getName().empty()) {
-			setValueToAccumulator(bVal);
-			storeValueFromAccumulator(temp2Variable);
+		if(b->get_name().empty()) {
+			set_value_to_accumulator(b_val);
+			store_value_from_accumulator(temp1_variable);
 		} else {
-			loadValueToAccumulator(b);
-			storeValueFromAccumulator(temp2Variable);
+			load_value_to_accumulator(b);
+			store_value_from_accumulator(temp1_variable);
 		}
 
-		if(a->getName().empty()) {
-			setValueToAccumulator(aVal);
+		if(a->get_name().empty()) {
+			set_value_to_accumulator(a_val);
 		} else {
-			loadValueToAccumulator(a);
+			load_value_to_accumulator(a);
 		}
 		
-		subValueFromAccumulator(temp2Variable);
-		jumpIfFalsePosition = m_commandPointer;
-		writeCode("JPOS", jumpIfFalsePosition + 2);
-		jumpIfTruePosition = m_commandPointer;
-		writeCode("JUMP", jumpIfTruePosition + 1);
+		sub_value_from_accumulator(temp1_variable);
+		jump_if_false_position = m_command_pointer;
+		write_code("JPOS", jump_if_false_position + 2);
+		jump_if_true_position = m_command_pointer;
+		write_code("JUMP", jump_if_true_position + 1);
 	}
 
-	Condition* condition = new Condition{m_commandPointer - commandStart, jumpIfTruePosition, jumpIfFalsePosition};
+	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
 	return condition;
 }
 
-std::string CodeGenerator::getCode() {
+std::string CodeGenerator::get_code() const {
 	std::stringstream code;
 	unsigned int i = 0;
-	for(std::string s : m_code) {
+	for(const std::string& s : m_code) {
 		#if CODE_GENERATOR_DEBUG_COMMAND_LINES_NO
 		code << i << ". ";
 		#endif
@@ -1175,8 +1156,8 @@ std::string CodeGenerator::getCode() {
 	return code.str();
 }
 
-void CodeGenerator::generateOutput() {
-	for(std::string s : m_code) {
+void CodeGenerator::generate_output() {
+	for(const std::string& s : m_code) {
 		if(s == "HALT") {
 			m_output << s;
 			return;

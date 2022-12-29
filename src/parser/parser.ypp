@@ -5,13 +5,14 @@
     #include <string>
 
     #include "../CodeGenerator.h"
-    #include "../Memory.h"
+
+	#include "../Memory.h"
     #include "../Variable.h"
 
     extern FILE* yyin;
     extern int yylineno;
 
-    CodeGenerator* codeGenerator;
+    CodeGenerator* code_generator;
     Memory* memory;
 
     int yylex(void);
@@ -20,7 +21,8 @@
 
     %code requires {
     #include "../CodeGenerator.h"
-    #include "../Variable.h"
+
+#include "../Variable.h"
 }
 
 %union {
@@ -58,17 +60,17 @@ procedures:
     | procedure                                                             
 
 procedure:
-    PROCEDURE                                                               { codeGenerator->generateInitialCodeForProcedure(); }
-    proc_head IS VAR proc_head_declarations _BEGIN commands END             { codeGenerator->generateProcedureEndCode(memory->finishProcedure($8));
-                                                                              memory->clearCurrentProcedure(); }
+    PROCEDURE                                                               { code_generator->generate_initial_code_for_procedure(); }
+    proc_head IS VAR proc_head_declarations _BEGIN commands END             { code_generator->generate_procedure_end_code(memory->finish_procedure($8));
+                                                                              memory->clear_current_procedure(); }
 
-    | PROCEDURE                                                             { codeGenerator->generateInitialCodeForProcedure(); }
-    proc_head IS _BEGIN commands END                                        { codeGenerator->generateProcedureEndCode(memory->finishProcedure($6));
-                                                                              memory->clearCurrentProcedure(); }
+    | PROCEDURE                                                             { code_generator->generate_initial_code_for_procedure(); }
+    proc_head IS _BEGIN commands END                                        { code_generator->generate_procedure_end_code(memory->finish_procedure($6));
+                                                                              memory->clear_current_procedure(); }
 
 main:
-    PROGRAM IS VAR declarations _BEGIN commands END                         { codeGenerator->writeCode("HALT"); }
-    | PROGRAM IS _BEGIN commands END                                        { codeGenerator->writeCode("HALT"); }
+    PROGRAM IS VAR declarations _BEGIN commands END                         { code_generator->write_code("HALT"); }
+    | PROGRAM IS _BEGIN commands END                                        { code_generator->write_code("HALT"); }
 
 commands:
     commands command                                                        { $$ = $1 + $2; }
@@ -76,15 +78,15 @@ commands:
 
 command:
     %empty                                                                  
-    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = codeGenerator->assignValueToVariable(*$1, $3) + $3; }
-    | IF condition THEN commands ELSE                                       { codeGenerator->generateMiddleIfElseJump(); }
-    commands ENDIF                                                          { $$ = codeGenerator->ifElseCondition($2, $4, $7) + $4 + $7; }
-    | IF condition THEN commands ENDIF                                      { $$ = codeGenerator->ifCondition($2, $4) + $4; }
-    | WHILE condition DO commands ENDWHILE                                  { $$ = codeGenerator->whileLoop($2, $4) + $4; }
-    | REPEAT commands UNTIL condition SEMICOLON                             { $$ = codeGenerator->repeatUntilLoop($4, $2) + $2; }
-    | execute_proc_head SEMICOLON                                           { $$ = codeGenerator->executeProcedure(*$1, memory->getProcedureExecutionVariables()); }
-    | READ IDENTIFIER SEMICOLON                                             { $$ = codeGenerator->readValue(*$2); }
-    | WRITE value SEMICOLON                                                 { $$ = codeGenerator->printOutValue($2); }
+    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = code_generator->assign_value_to_variable(*$1, $3) + $3; }
+    | IF condition THEN commands ELSE                                       { code_generator->generate_middle_if_else_jump(); }
+    commands ENDIF                                                          { $$ = code_generator->if_else_condition($2, $4, $7) + $4 + $7; }
+    | IF condition THEN commands ENDIF                                      { $$ = code_generator->if_condition($2, $4) + $4; }
+    | WHILE condition DO commands ENDWHILE                                  { $$ = code_generator->while_loop($2, $4) + $4; }
+    | REPEAT commands UNTIL condition SEMICOLON                             { $$ = code_generator->repeat_until_loop($4, $2) + $2; }
+    | execute_proc_head SEMICOLON                                           { $$ = code_generator->execute_procedure(*$1, memory->get_procedure_execution_variables()); }
+    | READ IDENTIFIER SEMICOLON                                             { $$ = code_generator->read_value(*$2); }
+    | WRITE value SEMICOLON                                                 { $$ = code_generator->print_out_value($2); }
 
 execute_proc_head:
     IDENTIFIER LB execute_proc_head_declarations RB                         
@@ -94,44 +96,44 @@ execute_proc_head_declarations:
     | execute_proc_head_declaration                                                 
     
 execute_proc_head_declaration:
-    IDENTIFIER                                                              { memory->prepareProcedureExecutionVariable(*$1); }
+    IDENTIFIER                                                              { memory->prepare_procedure_execution_variable(*$1); }
 
 proc_head:
-    IDENTIFIER LB proc_head_declarations RB                                 { memory->setIdentifierToCurrentProcedure(*$1); }
+    IDENTIFIER LB proc_head_declarations RB                                 { memory->set_identifier_to_current_procedure(*$1); }
 
 proc_head_declarations:
     | proc_head_declarations COMMA proc_head_declaration                      
     | proc_head_declaration                                                 
     
 proc_head_declaration:
-    IDENTIFIER                                                              { memory->addVariableToProcedure(*$1); }
+    IDENTIFIER                                                              { memory->add_variable_to_procedure(*$1); }
 
 declarations:
     declarations COMMA declaration                                          
     | declaration                                                           
 
 declaration:
-    IDENTIFIER                                                              { memory->addVariableToMemory(*$1, 0); }
+    IDENTIFIER                                                              { memory->add_variable_to_memory(*$1, 0); }
 
 expression:
-    value                                                                   { $$ = codeGenerator->setValueToAccumulator($1); }
-    | value PLUS value                                                      { $$ = codeGenerator->add($1, $3); }
-    | value MINUS value                                                     { $$ = codeGenerator->sub($1, $3); }
-    | value MUL value                                                       { $$ = codeGenerator->mul($1, $3); }
-    | value DIV value                                                       { $$ = codeGenerator->div($1, $3); }
-    | value MOD value                                                       { $$ = codeGenerator->mod($1, $3); }
+    value                                                                   { $$ = code_generator->set_value_to_accumulator($1); }
+    | value PLUS value                                                      { $$ = code_generator->add($1, $3); }
+    | value MINUS value                                                     { $$ = code_generator->subtract($1, $3); }
+    | value MUL value                                                       { $$ = code_generator->multiply($1, $3); }
+    | value DIV value                                                       { $$ = code_generator->divide($1, $3); }
+    | value MOD value                                                       { $$ = code_generator->modulo($1, $3); }
 
 condition:
-    value EQ value                                                          { $$ = codeGenerator->equal($1, $3); }
-    | value NEQ value                                                       { $$ = codeGenerator->nequal($1, $3); }
-    | value GREATER value                                                   { $$ = codeGenerator->greater($1, $3); }
-    | value LESS value                                                      { $$ = codeGenerator->less($1, $3); }
-    | value GREQ value                                                      { $$ = codeGenerator->greq($1, $3); }
-    | value LEQ value                                                       { $$ = codeGenerator->leq($1, $3); }
+    value EQ value                                                          { $$ = code_generator->equal($1, $3); }
+    | value NEQ value                                                       { $$ = code_generator->not_equal($1, $3); }
+    | value GREATER value                                                   { $$ = code_generator->greater($1, $3); }
+    | value LESS value                                                      { $$ = code_generator->less($1, $3); }
+    | value GREQ value                                                      { $$ = code_generator->greater_or_equal($1, $3); }
+    | value LEQ value                                                       { $$ = code_generator->lesser_or_equal($1, $3); }
 
 value:
-    NUM                                                                     { $$ = memory->getValueHolder($1); }
-    | IDENTIFIER                                                            { $$ = memory->getVariableFromMemory(*$1); }
+    NUM                                                                     { $$ = memory->get_value_holder($1); }
+    | IDENTIFIER                                                            { $$ = memory->get_variable_from_memory(*$1); }
 
 %%
 
@@ -142,10 +144,10 @@ void yyerror(const char* error) {
 
 int parser_main(int argc, char** argv) {
     memory = new Memory();
-    codeGenerator = new CodeGenerator(argc, argv);
-    codeGenerator->setMemoryPointer(memory);
+    code_generator = new CodeGenerator(argc, argv);
+    code_generator->set_memory_pointer(memory);
 
-    yyin = codeGenerator->getInput();
+    yyin = code_generator->get_input();
 
     try {
         yyparse();
@@ -154,12 +156,12 @@ int parser_main(int argc, char** argv) {
     }
 
 	#ifdef _DEBUG
-    std::cout << codeGenerator->getCode() << std::endl;
+    std::cout << code_generator->get_code() << std::endl;
 	#endif
     
-    codeGenerator->generateOutput();
+    code_generator->generate_output();
 
-    delete codeGenerator;
+    delete code_generator;
     delete memory;
 
     return 0;

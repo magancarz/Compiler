@@ -74,20 +74,21 @@
     #include <fstream>
     #include <string>
 
-    #include "../CodeGenerator.h"
-    #include "../Memory.h"
+    #include "../Code_generator.h"
+
+#include "../Memory.h"
     #include "../Variable.h"
 
     extern FILE* yyin;
     extern int yylineno;
 
-    CodeGenerator* codeGenerator;
+    CodeGenerator* code_generator;
     Memory* memory;
 
     int yylex(void);
     void yyerror(const char* error);
 
-#line 91 "src\\parser\\parser.tab.cpp"
+#line 92 "src\\parser\\parser.tab.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -564,11 +565,11 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    53,    53,    56,    57,    58,    61,    61,    65,    65,
-      70,    71,    74,    75,    78,    79,    80,    80,    82,    83,
-      84,    85,    86,    87,    90,    93,    94,    97,   100,   102,
-     103,   104,   107,   110,   111,   114,   117,   118,   119,   120,
-     121,   122,   125,   126,   127,   128,   129,   130,   133,   134
+       0,    55,    55,    58,    59,    60,    63,    63,    67,    67,
+      72,    73,    76,    77,    80,    81,    82,    82,    84,    85,
+      86,    87,    88,    89,    92,    95,    96,    99,   102,   104,
+     105,   106,   109,   112,   113,   116,   119,   120,   121,   122,
+     123,   124,   127,   128,   129,   130,   131,   132,   135,   136
 };
 #endif
 
@@ -1207,213 +1208,213 @@ yyreduce:
   switch (yyn)
     {
   case 6: /* $@1: %empty  */
-#line 61 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->generateInitialCodeForProcedure(); }
-#line 1213 "src\\parser\\parser.tab.cpp"
+#line 63 "src\\parser\\parser.ypp"
+                                                                            { code_generator->generate_initial_code_for_procedure(); }
+#line 1214 "src\\parser\\parser.tab.cpp"
     break;
 
   case 7: /* procedure: PROCEDURE $@1 proc_head IS VAR proc_head_declarations _BEGIN commands END  */
-#line 62 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->generateProcedureEndCode(memory->finishProcedure((yyvsp[-1].num)));
-                                                                              memory->clearCurrentProcedure(); }
-#line 1220 "src\\parser\\parser.tab.cpp"
+#line 64 "src\\parser\\parser.ypp"
+                                                                            { code_generator->generate_procedure_end_code(memory->finish_procedure((yyvsp[-1].num)));
+                                                                              memory->clear_current_procedure(); }
+#line 1221 "src\\parser\\parser.tab.cpp"
     break;
 
   case 8: /* $@2: %empty  */
-#line 65 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->generateInitialCodeForProcedure(); }
-#line 1226 "src\\parser\\parser.tab.cpp"
+#line 67 "src\\parser\\parser.ypp"
+                                                                            { code_generator->generate_initial_code_for_procedure(); }
+#line 1227 "src\\parser\\parser.tab.cpp"
     break;
 
   case 9: /* procedure: PROCEDURE $@2 proc_head IS _BEGIN commands END  */
-#line 66 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->generateProcedureEndCode(memory->finishProcedure((yyvsp[-1].num)));
-                                                                              memory->clearCurrentProcedure(); }
-#line 1233 "src\\parser\\parser.tab.cpp"
+#line 68 "src\\parser\\parser.ypp"
+                                                                            { code_generator->generate_procedure_end_code(memory->finish_procedure((yyvsp[-1].num)));
+                                                                              memory->clear_current_procedure(); }
+#line 1234 "src\\parser\\parser.tab.cpp"
     break;
 
   case 10: /* main: PROGRAM IS VAR declarations _BEGIN commands END  */
-#line 70 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->writeCode("HALT"); }
-#line 1239 "src\\parser\\parser.tab.cpp"
+#line 72 "src\\parser\\parser.ypp"
+                                                                            { code_generator->write_code("HALT"); }
+#line 1240 "src\\parser\\parser.tab.cpp"
     break;
 
   case 11: /* main: PROGRAM IS _BEGIN commands END  */
-#line 71 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->writeCode("HALT"); }
-#line 1245 "src\\parser\\parser.tab.cpp"
+#line 73 "src\\parser\\parser.ypp"
+                                                                            { code_generator->write_code("HALT"); }
+#line 1246 "src\\parser\\parser.tab.cpp"
     break;
 
   case 12: /* commands: commands command  */
-#line 74 "src\\parser\\parser.ypp"
+#line 76 "src\\parser\\parser.ypp"
                                                                             { (yyval.num) = (yyvsp[-1].num) + (yyvsp[0].num); }
-#line 1251 "src\\parser\\parser.tab.cpp"
+#line 1252 "src\\parser\\parser.tab.cpp"
     break;
 
   case 15: /* command: IDENTIFIER ASSIGN expression SEMICOLON  */
-#line 79 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->assignValueToVariable(*(yyvsp[-3].str), (yyvsp[-1].num)) + (yyvsp[-1].num); }
-#line 1257 "src\\parser\\parser.tab.cpp"
+#line 81 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->assign_value_to_variable(*(yyvsp[-3].str), (yyvsp[-1].num)) + (yyvsp[-1].num); }
+#line 1258 "src\\parser\\parser.tab.cpp"
     break;
 
   case 16: /* $@3: %empty  */
-#line 80 "src\\parser\\parser.ypp"
-                                                                            { codeGenerator->generateMiddleIfElseJump(); }
-#line 1263 "src\\parser\\parser.tab.cpp"
+#line 82 "src\\parser\\parser.ypp"
+                                                                            { code_generator->generate_middle_if_else_jump(); }
+#line 1264 "src\\parser\\parser.tab.cpp"
     break;
 
   case 17: /* command: IF condition THEN commands ELSE $@3 commands ENDIF  */
-#line 81 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->ifElseCondition((yyvsp[-6].condit), (yyvsp[-4].num), (yyvsp[-1].num)) + (yyvsp[-4].num) + (yyvsp[-1].num); }
-#line 1269 "src\\parser\\parser.tab.cpp"
+#line 83 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->if_else_condition((yyvsp[-6].condit), (yyvsp[-4].num), (yyvsp[-1].num)) + (yyvsp[-4].num) + (yyvsp[-1].num); }
+#line 1270 "src\\parser\\parser.tab.cpp"
     break;
 
   case 18: /* command: IF condition THEN commands ENDIF  */
-#line 82 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->ifCondition((yyvsp[-3].condit), (yyvsp[-1].num)) + (yyvsp[-1].num); }
-#line 1275 "src\\parser\\parser.tab.cpp"
+#line 84 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->if_condition((yyvsp[-3].condit), (yyvsp[-1].num)) + (yyvsp[-1].num); }
+#line 1276 "src\\parser\\parser.tab.cpp"
     break;
 
   case 19: /* command: WHILE condition DO commands ENDWHILE  */
-#line 83 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->whileLoop((yyvsp[-3].condit), (yyvsp[-1].num)) + (yyvsp[-1].num); }
-#line 1281 "src\\parser\\parser.tab.cpp"
+#line 85 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->while_loop((yyvsp[-3].condit), (yyvsp[-1].num)) + (yyvsp[-1].num); }
+#line 1282 "src\\parser\\parser.tab.cpp"
     break;
 
   case 20: /* command: REPEAT commands UNTIL condition SEMICOLON  */
-#line 84 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->repeatUntilLoop((yyvsp[-1].condit), (yyvsp[-3].num)) + (yyvsp[-3].num); }
-#line 1287 "src\\parser\\parser.tab.cpp"
+#line 86 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->repeat_until_loop((yyvsp[-1].condit), (yyvsp[-3].num)) + (yyvsp[-3].num); }
+#line 1288 "src\\parser\\parser.tab.cpp"
     break;
 
   case 21: /* command: execute_proc_head SEMICOLON  */
-#line 85 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->executeProcedure(*(yyvsp[-1].str), memory->getProcedureExecutionVariables()); }
-#line 1293 "src\\parser\\parser.tab.cpp"
+#line 87 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->execute_procedure(*(yyvsp[-1].str), memory->get_procedure_execution_variables()); }
+#line 1294 "src\\parser\\parser.tab.cpp"
     break;
 
   case 22: /* command: READ IDENTIFIER SEMICOLON  */
-#line 86 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->readValue(*(yyvsp[-1].str)); }
-#line 1299 "src\\parser\\parser.tab.cpp"
+#line 88 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->read_value(*(yyvsp[-1].str)); }
+#line 1300 "src\\parser\\parser.tab.cpp"
     break;
 
   case 23: /* command: WRITE value SEMICOLON  */
-#line 87 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->printOutValue((yyvsp[-1].var)); }
-#line 1305 "src\\parser\\parser.tab.cpp"
+#line 89 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->print_out_value((yyvsp[-1].var)); }
+#line 1306 "src\\parser\\parser.tab.cpp"
     break;
 
   case 27: /* execute_proc_head_declaration: IDENTIFIER  */
-#line 97 "src\\parser\\parser.ypp"
-                                                                            { memory->prepareProcedureExecutionVariable(*(yyvsp[0].str)); }
-#line 1311 "src\\parser\\parser.tab.cpp"
+#line 99 "src\\parser\\parser.ypp"
+                                                                            { memory->prepare_procedure_execution_variable(*(yyvsp[0].str)); }
+#line 1312 "src\\parser\\parser.tab.cpp"
     break;
 
   case 28: /* proc_head: IDENTIFIER LB proc_head_declarations RB  */
-#line 100 "src\\parser\\parser.ypp"
-                                                                            { memory->setIdentifierToCurrentProcedure(*(yyvsp[-3].str)); }
-#line 1317 "src\\parser\\parser.tab.cpp"
+#line 102 "src\\parser\\parser.ypp"
+                                                                            { memory->set_identifier_to_current_procedure(*(yyvsp[-3].str)); }
+#line 1318 "src\\parser\\parser.tab.cpp"
     break;
 
   case 32: /* proc_head_declaration: IDENTIFIER  */
-#line 107 "src\\parser\\parser.ypp"
-                                                                            { memory->addVariableToProcedure(*(yyvsp[0].str)); }
-#line 1323 "src\\parser\\parser.tab.cpp"
+#line 109 "src\\parser\\parser.ypp"
+                                                                            { memory->add_variable_to_procedure(*(yyvsp[0].str)); }
+#line 1324 "src\\parser\\parser.tab.cpp"
     break;
 
   case 35: /* declaration: IDENTIFIER  */
-#line 114 "src\\parser\\parser.ypp"
-                                                                            { memory->addVariableToMemory(*(yyvsp[0].str), 0); }
-#line 1329 "src\\parser\\parser.tab.cpp"
+#line 116 "src\\parser\\parser.ypp"
+                                                                            { memory->add_variable_to_memory(*(yyvsp[0].str), 0); }
+#line 1330 "src\\parser\\parser.tab.cpp"
     break;
 
   case 36: /* expression: value  */
-#line 117 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->setValueToAccumulator((yyvsp[0].var)); }
-#line 1335 "src\\parser\\parser.tab.cpp"
+#line 119 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->set_value_to_accumulator((yyvsp[0].var)); }
+#line 1336 "src\\parser\\parser.tab.cpp"
     break;
 
   case 37: /* expression: value PLUS value  */
-#line 118 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->add((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1341 "src\\parser\\parser.tab.cpp"
+#line 120 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->add((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1342 "src\\parser\\parser.tab.cpp"
     break;
 
   case 38: /* expression: value MINUS value  */
-#line 119 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->sub((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1347 "src\\parser\\parser.tab.cpp"
+#line 121 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->subtract((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1348 "src\\parser\\parser.tab.cpp"
     break;
 
   case 39: /* expression: value MUL value  */
-#line 120 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->mul((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1353 "src\\parser\\parser.tab.cpp"
+#line 122 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->multiply((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1354 "src\\parser\\parser.tab.cpp"
     break;
 
   case 40: /* expression: value DIV value  */
-#line 121 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->div((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1359 "src\\parser\\parser.tab.cpp"
+#line 123 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->divide((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1360 "src\\parser\\parser.tab.cpp"
     break;
 
   case 41: /* expression: value MOD value  */
-#line 122 "src\\parser\\parser.ypp"
-                                                                            { (yyval.num) = codeGenerator->mod((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1365 "src\\parser\\parser.tab.cpp"
+#line 124 "src\\parser\\parser.ypp"
+                                                                            { (yyval.num) = code_generator->modulo((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1366 "src\\parser\\parser.tab.cpp"
     break;
 
   case 42: /* condition: value EQ value  */
-#line 125 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->equal((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1371 "src\\parser\\parser.tab.cpp"
+#line 127 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->equal((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1372 "src\\parser\\parser.tab.cpp"
     break;
 
   case 43: /* condition: value NEQ value  */
-#line 126 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->nequal((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1377 "src\\parser\\parser.tab.cpp"
+#line 128 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->not_equal((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1378 "src\\parser\\parser.tab.cpp"
     break;
 
   case 44: /* condition: value GREATER value  */
-#line 127 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->greater((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1383 "src\\parser\\parser.tab.cpp"
+#line 129 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->greater((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1384 "src\\parser\\parser.tab.cpp"
     break;
 
   case 45: /* condition: value LESS value  */
-#line 128 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->less((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1389 "src\\parser\\parser.tab.cpp"
+#line 130 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->less((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1390 "src\\parser\\parser.tab.cpp"
     break;
 
   case 46: /* condition: value GREQ value  */
-#line 129 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->greq((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1395 "src\\parser\\parser.tab.cpp"
+#line 131 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->greater_or_equal((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1396 "src\\parser\\parser.tab.cpp"
     break;
 
   case 47: /* condition: value LEQ value  */
-#line 130 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = codeGenerator->leq((yyvsp[-2].var), (yyvsp[0].var)); }
-#line 1401 "src\\parser\\parser.tab.cpp"
+#line 132 "src\\parser\\parser.ypp"
+                                                                            { (yyval.condit) = code_generator->lesser_or_equal((yyvsp[-2].var), (yyvsp[0].var)); }
+#line 1402 "src\\parser\\parser.tab.cpp"
     break;
 
   case 48: /* value: NUM  */
-#line 133 "src\\parser\\parser.ypp"
-                                                                            { (yyval.var) = memory->getValueHolder((yyvsp[0].num)); }
-#line 1407 "src\\parser\\parser.tab.cpp"
+#line 135 "src\\parser\\parser.ypp"
+                                                                            { (yyval.var) = memory->get_value_holder((yyvsp[0].num)); }
+#line 1408 "src\\parser\\parser.tab.cpp"
     break;
 
   case 49: /* value: IDENTIFIER  */
-#line 134 "src\\parser\\parser.ypp"
-                                                                            { (yyval.var) = memory->getVariableFromMemory(*(yyvsp[0].str)); }
-#line 1413 "src\\parser\\parser.tab.cpp"
+#line 136 "src\\parser\\parser.ypp"
+                                                                            { (yyval.var) = memory->get_variable_from_memory(*(yyvsp[0].str)); }
+#line 1414 "src\\parser\\parser.tab.cpp"
     break;
 
 
-#line 1417 "src\\parser\\parser.tab.cpp"
+#line 1418 "src\\parser\\parser.tab.cpp"
 
       default: break;
     }
@@ -1606,7 +1607,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 136 "src\\parser\\parser.ypp"
+#line 138 "src\\parser\\parser.ypp"
 
 
 void yyerror(const char* error) {
@@ -1616,10 +1617,10 @@ void yyerror(const char* error) {
 
 int parser_main(int argc, char** argv) {
     memory = new Memory();
-    codeGenerator = new CodeGenerator(argc, argv);
-    codeGenerator->setMemoryPointer(memory);
+    code_generator = new CodeGenerator(argc, argv);
+    code_generator->set_memory_pointer(memory);
 
-    yyin = codeGenerator->getInput();
+    yyin = code_generator->get_input();
 
     try {
         yyparse();
@@ -1628,12 +1629,12 @@ int parser_main(int argc, char** argv) {
     }
 
 	#ifdef _DEBUG
-    std::cout << codeGenerator->getCode() << std::endl;
+    std::cout << code_generator->get_code() << std::endl;
 	#endif
     
-    codeGenerator->generateOutput();
+    code_generator->generate_output();
 
-    delete codeGenerator;
+    delete code_generator;
     delete memory;
 
     return 0;
