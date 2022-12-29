@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <string>
-#include "Variable.h"
-#include "Procedure.h"
+#include "../variables/Variable.h"
+#include "../codeGenerator/Procedure.h"
 
 class Memory {
 public:

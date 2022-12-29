@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "Variable.h"
+#include "../variables/Variable.h"
 
 class Procedure {
 public:

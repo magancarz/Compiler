@@ -136,24 +136,24 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</DeploymentContent>
     </None>
-    <ClCompile Include="src\CodeGenerator.cpp" />
+    <ClCompile Include="src\codeGenerator\CodeGenerator.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\Memory.cpp" />
+    <ClCompile Include="src\memory\Memory.cpp" />
     <ClCompile Include="src\parser\lexer.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="src\parser\parser.tab.cpp" />
-    <ClCompile Include="src\Procedure.cpp" />
-    <ClCompile Include="src\Variable.cpp" />
+    <ClCompile Include="src\codeGenerator\Procedure.cpp" />
+    <ClCompile Include="src\variables\Variable.cpp" />
     <None Include="test.sh" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\CodeGenerator.h" />
-    <ClInclude Include="src\Procedure.h" />
-    <ClInclude Include="src\Memory.h" />
+    <ClInclude Include="src\codeGenerator\CodeGenerator.h" />
+    <ClInclude Include="src\codeGenerator\Procedure.h" />
+    <ClInclude Include="src\memory\Memory.h" />
     <ClInclude Include="src\parser\parser.tab.hpp" />
-    <ClInclude Include="src\Variable.h" />
+    <ClInclude Include="src\variables\Variable.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\parser\lexer.l">

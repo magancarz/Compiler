@@ -24,16 +24,16 @@
     <ClCompile Include="src\main.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\CodeGenerator.cpp">
+    <ClCompile Include="src\codeGenerator\CodeGenerator.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\Variable.cpp">
+    <ClCompile Include="src\variables\Variable.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\Memory.cpp">
+    <ClCompile Include="src\memory\Memory.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
-    <ClCompile Include="src\Procedure.cpp">
+    <ClCompile Include="src\codeGenerator\Procedure.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,16 +41,16 @@
     <ClInclude Include="src\parser\parser.tab.hpp">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\CodeGenerator.h">
+    <ClInclude Include="src\codeGenerator\CodeGenerator.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\Variable.h">
+    <ClInclude Include="src\variables\Variable.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\Memory.h">
+    <ClInclude Include="src\memory\Memory.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="src\Procedure.h">
+    <ClInclude Include="src\codeGenerator\Procedure.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>

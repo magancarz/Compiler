@@ -4,10 +4,10 @@
     #include <fstream>
     #include <string>
 
-    #include "../CodeGenerator.h"
+    #include "../codeGenerator/CodeGenerator.h"
 
-	#include "../Memory.h"
-    #include "../Variable.h"
+	#include "../memory/Memory.h"
+    #include "../variables/Variable.h"
 
     extern FILE* yyin;
     extern int yylineno;
@@ -19,10 +19,9 @@
     void yyerror(const char* error);
 %}
 
-    %code requires {
-    #include "../CodeGenerator.h"
-
-#include "../Variable.h"
+%code requires {
+	#include "../codeGenerator/CodeGenerator.h"
+	#include "../variables/Variable.h"
 }
 
 %union {
@@ -55,17 +54,15 @@ program_all:
     procedures main
 
 procedures:
-    %empty
-    | procedures procedure                                                  
+    procedures procedure                                                  
     | procedure                                                             
 
 procedure:
     PROCEDURE                                                               { code_generator->generate_initial_code_for_procedure(); }
     proc_head IS VAR proc_head_declarations _BEGIN commands END             { code_generator->generate_procedure_end_code(memory->finish_procedure($8));
                                                                               memory->clear_current_procedure(); }
-
-    | PROCEDURE                                                             { code_generator->generate_initial_code_for_procedure(); }
-    proc_head IS _BEGIN commands END                                        { code_generator->generate_procedure_end_code(memory->finish_procedure($6));
+                                                                              
+    | proc_head IS _BEGIN commands END                                        { code_generator->generate_procedure_end_code(memory->finish_procedure($4));
                                                                               memory->clear_current_procedure(); }
 
 main:
@@ -76,9 +73,8 @@ commands:
     commands command                                                        { $$ = $1 + $2; }
     | command                                                               
 
-command:
-    %empty                                                                  
-    | IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = code_generator->assign_value_to_variable(*$1, $3) + $3; }
+command:                                                         
+    IDENTIFIER ASSIGN expression SEMICOLON                                { $$ = code_generator->assign_value_to_variable(*$1, $3) + $3; }
     | IF condition THEN commands ELSE                                       { code_generator->generate_middle_if_else_jump(); }
     commands ENDIF                                                          { $$ = code_generator->if_else_condition($2, $4, $7) + $4 + $7; }
     | IF condition THEN commands ENDIF                                      { $$ = code_generator->if_condition($2, $4) + $4; }
@@ -102,7 +98,7 @@ proc_head:
     IDENTIFIER LB proc_head_declarations RB                                 { memory->set_identifier_to_current_procedure(*$1); }
 
 proc_head_declarations:
-    | proc_head_declarations COMMA proc_head_declaration                      
+	proc_head_declarations COMMA proc_head_declaration                      
     | proc_head_declaration                                                 
     
 proc_head_declaration:
