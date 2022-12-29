@@ -74,9 +74,9 @@
     #include <fstream>
     #include <string>
 
-    #include "../Code_generator.h"
+    #include "../CodeGenerator.h"
 
-#include "../Memory.h"
+	#include "../Memory.h"
     #include "../Variable.h"
 
     extern FILE* yyin;

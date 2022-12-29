@@ -47,7 +47,7 @@ extern int yydebug;
 /* "%code requires" blocks.  */
 #line 22 "src\\parser\\parser.ypp"
 
-    #include "../Code_generator.h"
+    #include "../CodeGenerator.h"
 
 #include "../Variable.h"
 
