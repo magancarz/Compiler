@@ -31,6 +31,7 @@ public:
 
 private:
 	bool m_is_in_procedure = false;
+	std::string m_parent_procedure_name;
 
 	std::string m_name;
 	unsigned int m_value = 0;
@@ -38,7 +39,7 @@ private:
 	unsigned int m_memory_position;
 
 	Variable* m_pointing = nullptr;
-	std::string m_parent_procedure_name;
 	bool m_is_pointer = false;
+
 	bool m_is_initialized = false;
 };

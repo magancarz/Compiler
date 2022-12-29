@@ -143,6 +143,7 @@ int parser_main(int argc, char** argv) {
     code_generator = new CodeGenerator(argc, argv);
     code_generator->set_memory_pointer(memory);
 
+    // run parser with input
     yyin = code_generator->get_input();
 
     try {
@@ -151,6 +152,7 @@ int parser_main(int argc, char** argv) {
         yyerror(error);
     }
 
+    // output generated code
 	#ifdef _DEBUG
     std::cout << code_generator->get_code() << std::endl;
 	#endif
