@@ -125,7 +125,7 @@ condition:
     | value GREATER value                                                   { $$ = code_generator->greater($1, $3); }
     | value LESS value                                                      { $$ = code_generator->less($1, $3); }
     | value GREQ value                                                      { $$ = code_generator->greater_or_equal($1, $3); }
-    | value LEQ value                                                       { $$ = code_generator->lesser_or_equal($1, $3); }
+    | value LEQ value                                                       { $$ = code_generator->less_or_equal($1, $3); }
 
 value:
     NUM                                                                     { $$ = memory->get_value_holder($1); }

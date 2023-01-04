@@ -19,6 +19,10 @@ CodeGenerator::~CodeGenerator() {
 	fclose(m_input);
 }
 
+void CodeGenerator::set_memory_pointer(Memory* memory) {
+	m_memory = memory;
+}
+
 void CodeGenerator::write_code(const std::string& code) {
 	std::stringstream final_code;
 	final_code << code;
@@ -251,8 +255,7 @@ unsigned int CodeGenerator::execute_procedure(const std::string& procedure_name,
 		write_code("JUMP", executed_procedure->get_procedure_start_point());
 		
 	} else {
-		printf("Error at line %d: Procedure %s doesn't exist\n", yylineno, procedure_name.c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Procedure " + procedure_name + " doesn't exist.\n");
 	}
 
 	m_memory->clear_procedure_execution_variables();
@@ -388,8 +391,7 @@ unsigned int CodeGenerator::print_out_value(Variable* variable) {
 	if(variable->is_initialized()) {
 		write_code("PUT", variable_memory_position);
 	} else {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, variable->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + variable->get_name() + ".\n");
 	}
 
 	return m_command_pointer - command_start;
@@ -399,13 +401,11 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	if(a->get_name().empty() && b->get_name().empty()) {
@@ -413,7 +413,6 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 		const unsigned int a_val = a->get_value();
 		const unsigned int b_val = b->get_value();
 		const unsigned int result = a_val + b_val;
-		Variable* accumulator = m_memory->get_variable_from_memory(0);
 		set_value_to_accumulator(result);
 
 	} else if(a->get_name().empty()) {
@@ -436,13 +435,11 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	if(a->get_name().empty() && b->get_name().empty()) {
@@ -450,8 +447,7 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 		const unsigned int a_val = a->get_value();
 		const unsigned int b_val = b->get_value();
 		const unsigned int result = b_val > a_val ? 0 : a_val - b_val;
-
-		Variable* accumulator = m_memory->get_variable_from_memory(0);
+		
 		set_value_to_accumulator(result);
 
 	} else if(a->get_name().empty()) {
@@ -483,13 +479,11 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 	
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
@@ -576,13 +570,11 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
@@ -733,13 +725,11 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
@@ -890,13 +880,11 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position, jump_if_true_position;
@@ -952,13 +940,11 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position, jump_if_true_position;
@@ -1010,13 +996,11 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position, jump_if_true_position;
@@ -1060,13 +1044,11 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position, jump_if_true_position;
@@ -1110,13 +1092,11 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 	const unsigned int b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position, jump_if_true_position;
@@ -1161,13 +1141,11 @@ Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 	const unsigned int result = (a_val >= b_val)? 1 : 0;
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, a->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
 	if(!b->get_name().empty() && !b->is_initialized()) {
-		printf("Error at line %d: Use of uninitialized variable %s.\n", yylineno, b->get_name().c_str());
-		exit(1);
+		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
 	unsigned int jump_if_false_position = 0, jump_if_true_position = 0;
@@ -1216,6 +1194,10 @@ std::string CodeGenerator::get_code() const {
 	}
 
 	return code.str();
+}
+
+FILE* CodeGenerator::get_input() const {
+	return m_input;
 }
 
 void CodeGenerator::generate_output() {

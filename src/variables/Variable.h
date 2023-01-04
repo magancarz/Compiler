@@ -5,29 +5,32 @@
 class Variable {
 public:
 	Variable(unsigned int value, unsigned int memory_position);
+
 	Variable(std::string name, unsigned int value, unsigned int memory_position);
+
 	Variable(bool is_in_procedure, std::string name, unsigned int memory_position);
+
 	Variable(bool is_in_procedure, std::string name, unsigned int memory_position, Variable* pointing);
 
-	bool is_initialized() const { return m_is_initialized; }
-	void set_is_initialized(const bool value) { m_is_initialized = value; }
+	bool is_initialized() const;
+	void set_is_initialized(bool value);
 
-	void set_name(const std::string& name) { m_name = name; }
-	std::string get_name() { return m_name; }
+	void set_name(const std::string& name);
+	std::string get_name();
 
-	void set_value(const unsigned int value) { m_value = value; }
-	unsigned int get_value() const { return m_value; }
+	void set_value(unsigned int value);
+	unsigned int get_value() const;
 
-	unsigned int get_memory_position() const { return m_memory_position; }
+	unsigned int get_memory_position() const;
 
-	void set_parent_procedure_name(const std::string& name) { m_parent_procedure_name = name; }
-	const std::string& get_parent_procedure_name() { return m_parent_procedure_name; }
+	void set_parent_procedure_name(const std::string& name);
+	const std::string& get_parent_procedure_name();
 
-	bool is_in_procedure() const { return m_is_in_procedure; }
+	bool is_in_procedure() const;
 
-	bool is_pointer() const { return m_is_pointer; }
+	bool is_pointer() const;
 	
-	Variable* get_pointed_variable() const { return m_pointing; }
+	Variable* get_pointed_variable() const;
 
 private:
 	bool m_is_in_procedure = false;

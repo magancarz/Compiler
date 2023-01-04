@@ -10,21 +10,21 @@ public:
 	Procedure() = default;
 	~Procedure() = default;
 
-	std::string get_name() const { return m_name; }
-	void set_procedure_name(const std::string& name) { m_name = name; }
+	std::string get_name() const;
+	void set_procedure_name(const std::string& name);
 	
-	void set_code_size(const unsigned int size) { m_code_size = size; }
-	unsigned int get_code_size() const { return m_code_size; }
+	void set_code_size(unsigned int size);
+	unsigned int get_code_size() const;
 
 	void add_variable(Variable* variable);
-	std::vector<Variable*>& get_procedure_variables() { return m_variables; }
-	std::vector<Variable*>& get_procedure_pointers() { return m_pointers; }
+	std::vector<Variable*>& get_procedure_variables();
+	std::vector<Variable*>& get_procedure_pointers();
 
-	unsigned int get_procedure_start_point() const { return m_procedure_start_point; }
-	void set_procedure_start_point(const unsigned int start_point) { m_procedure_start_point = start_point; }
+	unsigned int get_procedure_start_point() const;
+	void set_procedure_start_point(unsigned int start_point);
 
-	unsigned int get_procedure_ending_jump_position() const { return m_ending_jump_position; }
-	void set_procedure_ending_jump_position(const unsigned int ending_jump_position) { m_ending_jump_position = ending_jump_position; }
+	unsigned int get_procedure_ending_jump_position() const;
+	void set_procedure_ending_jump_position(unsigned int ending_jump_position);
 
 private:
 	std::vector<Variable*> m_variables;

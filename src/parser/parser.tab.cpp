@@ -1392,7 +1392,7 @@ yyreduce:
 
   case 43: /* condition: value LEQ value  */
 #line 128 "src\\parser\\parser.ypp"
-                                                                            { (yyval.condit) = code_generator->lesser_or_equal((yyvsp[-2].var), (yyvsp[0].var)); }
+                                                                            { (yyval.condit) = code_generator->less_or_equal((yyvsp[-2].var), (yyvsp[0].var)); }
 #line 1397 "src\\parser\\parser.tab.cpp"
     break;
 
@@ -1615,6 +1615,7 @@ int parser_main(int argc, char** argv) {
     code_generator = new CodeGenerator(argc, argv);
     code_generator->set_memory_pointer(memory);
 
+    // run parser with input
     yyin = code_generator->get_input();
 
     try {
@@ -1623,6 +1624,7 @@ int parser_main(int argc, char** argv) {
         yyerror(error);
     }
 
+    // output generated code
 	#ifdef _DEBUG
     std::cout << code_generator->get_code() << std::endl;
 	#endif

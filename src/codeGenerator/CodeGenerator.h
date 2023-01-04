@@ -18,7 +18,7 @@ public:
 	CodeGenerator(int argc, char** argv);
 	~CodeGenerator();
 
-	void set_memory_pointer(Memory* memory) { m_memory = memory; }
+	void set_memory_pointer(Memory* memory);
 
 	// adds new line of code to m_code
 	void write_code(const std::string& code);
@@ -113,7 +113,7 @@ public:
 	// returns code converted to it's virtual machine's form
 	std::string get_code() const;
 
-	FILE* get_input() const { return m_input; }
+	FILE* get_input() const;
 
 	// writes converted code to output file
 	void generate_output();

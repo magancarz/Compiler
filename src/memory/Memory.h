@@ -38,7 +38,7 @@ public:
 	// creates and adds new procedure to the memory
 	void add_new_procedure();
 
-	Procedure* get_current_procedure() const { return m_current_procedure; }
+	Procedure* get_current_procedure() const;
 
 	// creates and adds new variable or pointer to the memory and assigns it to the procedure
 	void add_variable_to_procedure(const std::string& name);
@@ -64,9 +64,9 @@ public:
 	// clears memory used in procedure execution
 	void clear_procedure_execution_variables();
 
-	std::vector<Variable*>& get_memory_variables() { return m_variables; }
+	std::vector<Variable*>& get_memory_variables();
 
-	std::vector<Procedure*>& get_procedures() { return m_procedures; }
+	std::vector<Procedure*>& get_procedures();
 
 private:
 	unsigned int m_free_memory_pointer = 0;
