@@ -54,7 +54,8 @@ program_all:
     procedures main
 
 procedures:
-    procedures procedure                                                  
+	%empty
+    | procedures procedure                                                  
     | procedure                                                             
 
 procedure:
