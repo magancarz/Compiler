@@ -17,6 +17,10 @@ namespace MemoryTest {
 	public:
 		
 		TEST_METHOD(MemoryVariablesTest) {
+			// disclaimer: because we are just testing Memory class, we don't
+			// need variable yylineno from parser, so just assign it to any value in the Memory.cpp code
+			// (it is located at the top of the file) and we won't need to deal with tons of errors from just including lexer.l
+
 			// we expect variable at position 17 to have these values
 			constexpr int expected_variable_memory_position = 17;
 			const std::string expected_variable_value = "20";
