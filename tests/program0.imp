@@ -2,7 +2,7 @@
 PROGRAM IS
 VAR n, p
 BEGIN
-    READ n;
+    n := 1023;
     REPEAT
 	p:=n/2;
 	p:=2*p;

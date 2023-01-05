@@ -24,10 +24,10 @@ END
 PROGRAM IS
 VAR a,b,c,d,x,y,z
 BEGIN
-  READ a;
-  READ b;
-  READ c;
-  READ d;
+  a := 146126444;
+  b := 123415112;
+  c := 12313332;
+  d := 02834988;
   gcd(a,b,x);
   gcd(c,d,y);
   gcd(x,y,z);
