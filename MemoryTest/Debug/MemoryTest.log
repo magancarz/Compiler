@@ -1,0 +1,5 @@
+﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\Microsoft.Common.CurrentVersion.targets(2066,5): warning : The referenced project '..\Compiler\Compiler.vcxproj' does not exist.
+  pch.cpp
+  MemoryTest.cpp
+     Trwa tworzenie biblioteki C:\dev\Compiler\Debug\MemoryTest.lib i obiektu C:\dev\Compiler\Debug\MemoryTest.exp
+  MemoryTest.vcxproj -> C:\dev\Compiler\Debug\MemoryTest.dll
