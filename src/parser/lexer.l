@@ -16,8 +16,6 @@ int yylex();
 \n                  {}
 [[:blank:]]+        {}
 
-"[".*"]"			{}
-
 PROCEDURE           { return PROCEDURE; }
 IS                  { return IS; }
 VAR                 { return VAR; }
@@ -41,6 +39,8 @@ UNTIL               { return UNTIL; }
 READ                { return READ; }
 WRITE               { return WRITE; }
 
+"["                 { BEGIN(COMMENT); }
+
 [0-9]+              { yylval.num = std::stoll(yytext); return NUM; }
 [_a-z]+             { yylval.str = new std::string(yytext); return IDENTIFIER; }
 ":="                { return ASSIGN; }
@@ -59,5 +59,10 @@ WRITE               { return WRITE; }
 ")"                  { return RB; }
 ","                  { return COMMA; }
 ";"                  { return SEMICOLON; }
+
+<COMMENT>{
+[^\]]               ;
+"]"                 { BEGIN(INITIAL); }
+}
 
 %%

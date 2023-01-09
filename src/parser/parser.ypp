@@ -60,7 +60,7 @@ procedures:
 
 procedure:
     PROCEDURE                                                               { code_generator->generate_initial_code_for_procedure(); }
-    proc_head IS VAR proc_head_declarations _BEGIN commands END             { code_generator->generate_procedure_end_code(memory->finish_procedure($8));
+    | proc_head IS VAR proc_head_declarations _BEGIN commands END             { code_generator->generate_procedure_end_code(memory->finish_procedure($6));
                                                                               memory->clear_current_procedure(); }
                                                                               
     | proc_head IS _BEGIN commands END                                        { code_generator->generate_procedure_end_code(memory->finish_procedure($4));
