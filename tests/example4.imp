@@ -1,9 +1,3 @@
-[ Kombinacje
-? 20
-? 9
-> 167960
-]
-
 PROCEDURE s(n,m) IS
 VAR i,o
 BEGIN
