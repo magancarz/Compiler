@@ -1,4 +1,3 @@
-[ Binarna postać liczby ]
 PROGRAM IS
 VAR n, p
 BEGIN

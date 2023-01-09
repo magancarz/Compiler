@@ -1,8 +1,0 @@
-PROGRAM IS
-VAR a, b, c
-BEGIN
-	a := 5;
-	WRITE a;
-	WRITE 10;
-	WRITE 0;
-END

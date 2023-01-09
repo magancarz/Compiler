@@ -1,5 +1,4 @@
-[komentarz]
-PROCEDURE check(n,d,p) IS [koment]
+PROCEDURE check(n,d,p) IS
 VAR r
 BEGIN
     p:=0;

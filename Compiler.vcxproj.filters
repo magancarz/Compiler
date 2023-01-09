@@ -63,6 +63,5 @@
       <Filter>Pliki źródłowe</Filter>
     </None>
     <None Include="test.sh" />
-    <None Include="error_test.sh" />
   </ItemGroup>
 </Project>
