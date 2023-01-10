@@ -10,18 +10,15 @@ do
 	OUTPUT_FILE="$( echo $FILE_NAME ).mr"
 	CORRECT_FILE="$( echo $FILE_NAME )_correct.out"
 	
-	if [[ $FILE == *"program"* ]];
-	then 	
-		echo "Launching test for $FILE"
-		./kompilator $FILE $OUTPUT_FILE > $OUTPUT_FILE
-		OUTPUT_CODE="$(echo "$( virtual-machine/maszyna-wirtualna $OUTPUT_FILE)" | grep ">")"
-		DIFF=$( diff $CORRECT_FILE <( echo "$OUTPUT_CODE" ) )
-		
-		if [ "$DIFF" == "" ]
-		then
-			echo -e "\033[0;32mTest for $FILE completed!\033[0m"
-		else
-			echo -e "\033[0;31mTest for $FILE failed!\033[0m"
-		fi
+	echo "Launching test for $FILE"
+	./kompilator $FILE $OUTPUT_FILE > $OUTPUT_FILE
+	OUTPUT_CODE="$(echo "$( virtual-machine/maszyna-wirtualna $OUTPUT_FILE)" | grep ">")"
+	DIFF=$( diff $CORRECT_FILE <( echo "$OUTPUT_CODE" ) )
+	
+	if [ "$DIFF" == "" ]
+	then
+		echo -e "\033[0;32mTest for $FILE completed!\033[0m"
+	else
+		echo -e "\033[0;31mTest for $FILE failed!\033[0m"
 	fi
 done
