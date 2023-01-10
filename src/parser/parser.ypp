@@ -3,6 +3,7 @@
     #include <iostream>
     #include <fstream>
     #include <string>
+	#include <stdexcept>
 
     #include "../codeGenerator/CodeGenerator.h"
 
@@ -135,8 +136,10 @@ value:
 %%
 
 void yyerror(const char* error) {
-    fprintf(stderr, "Error | Line: %d\n%s\n", yylineno, error);
-    exit(1);
+    fprintf(stderr, "Error at line: %d\n%s\n", yylineno, error);
+
+    delete code_generator;
+	delete memory;
 }
 
 int parser_main(int argc, char** argv) {
@@ -149,8 +152,17 @@ int parser_main(int argc, char** argv) {
 
     try {
         yyparse();
-    } catch(const char* error) {
-        yyerror(error);
+    } catch(std::runtime_error err) {
+		std::cout << err.what() <<std::endl;
+
+        delete code_generator;
+		delete memory;
+
+        return 1;
+    } catch(const char* err) {
+	    yyerror(err);
+
+        return 1;
     }
 
     // output generated code
