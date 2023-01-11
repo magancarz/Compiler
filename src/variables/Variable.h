@@ -4,9 +4,9 @@
 
 class Variable {
 public:
-	Variable(unsigned int value, unsigned int memory_position);
+	Variable(unsigned long long value, unsigned int memory_position);
 
-	Variable(std::string name, unsigned int value, unsigned int memory_position);
+	Variable(std::string name, unsigned long long value, unsigned int memory_position);
 
 	Variable(bool is_in_procedure, std::string name, unsigned int memory_position);
 
@@ -18,8 +18,8 @@ public:
 	void set_name(const std::string& name);
 	std::string get_name();
 
-	void set_value(unsigned int value);
-	unsigned int get_value() const;
+	void set_value(unsigned long long value);
+	unsigned long long get_value() const;
 
 	unsigned int get_memory_position() const;
 
@@ -37,7 +37,7 @@ private:
 	std::string m_parent_procedure_name;
 
 	std::string m_name;
-	unsigned int m_value = 0;
+	unsigned long long m_value = 0;
 
 	unsigned int m_memory_position;
 

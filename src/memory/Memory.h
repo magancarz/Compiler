@@ -14,16 +14,16 @@ public:
 	void initialize_helping_variables();
 	
 	// used mainly to create constants or temporary variables in memory
-	void add_variable_to_memory(unsigned int value);
+	void add_variable_to_memory(unsigned long long value);
 
 	// used to create regular variables
-	void add_variable_to_memory(const std::string& name, unsigned int value);
+	void add_variable_to_memory(const std::string& name, unsigned long long value);
 
 	Variable* get_variable_from_memory(unsigned int memory_position) const;
 	Variable* get_variable_from_memory(const std::string& name) const;
 
-	void change_variable_value(unsigned int memory_position, unsigned int value) const;
-	void change_variable_value(const std::string& name, unsigned int value) const;
+	void change_variable_value(unsigned int memory_position, unsigned long long value) const;
+	void change_variable_value(const std::string& name, unsigned long long value) const;
 
 	bool check_if_variable_exists(const std::string& name) const;
 
@@ -32,7 +32,7 @@ public:
 	Variable* find_variable(const std::string& name) const;
 
 	// creates and returns variable as a constant
-	static Variable* get_value_holder(unsigned int value);
+	static Variable* get_value_holder(unsigned long long value);
 	Variable* get_variable(const std::string& name) const;
 
 	// creates and adds new procedure to the memory

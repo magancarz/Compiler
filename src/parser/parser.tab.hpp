@@ -107,12 +107,13 @@ union YYSTYPE
 {
 #line 28 "src\\parser\\parser.ypp"
 
-    unsigned int num;
+    unsigned long long num;
+    unsigned int num_int;
     std::string* str;
     Variable* var;
     Condition* condit;
 
-#line 116 "src\\parser\\parser.tab.hpp"
+#line 117 "src\\parser\\parser.tab.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

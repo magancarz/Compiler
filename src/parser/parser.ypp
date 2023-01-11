@@ -26,7 +26,8 @@
 }
 
 %union {
-    unsigned int num;
+    unsigned long long num;
+    unsigned int num_int;
     std::string* str;
     Variable* var;
     Condition* condit;
@@ -45,7 +46,8 @@
 %token TEST
 
 %type <var> value
-%type <num> NUM expression commands command
+%type <num> NUM
+%type <num_int> expression commands command
 %type <condit> condition
 %type <str> IDENTIFIER execute_proc_head
 
@@ -166,9 +168,7 @@ int parser_main(int argc, char** argv) {
     }
 
     // output generated code
-	#ifdef _DEBUG
     std::cout << code_generator->get_code() << std::endl;
-	#endif
     
     code_generator->generate_output();
 

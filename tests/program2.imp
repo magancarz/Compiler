@@ -1,9 +1,13 @@
-PROCEDURE check(n,d,p) IS
+[komentarz]
+PROCEDURE check(n,d,p) IS [koment]
 VAR r
 BEGIN
     p:=0;
     r:=n%d;
     WHILE r=0 DO
+        [koment
+            wiloniead
+        ]
         n:=n/d;
         p:=p+1;
         r:=n%d;
@@ -13,7 +17,7 @@ END
 PROGRAM IS
 VAR n,m,potega,dzielnik
 BEGIN
-    n := 1234567890;
+    READ n;
     dzielnik:=2;
     m:=dzielnik*dzielnik;
     WHILE n>=m DO

@@ -1,4 +1,4 @@
-[błąd:  użycie nie zadeklarowanej procedury pb w linii 15]
+[błąd: użycie nie zadeklarowanej procedury pb w linii 15]
 PROCEDURE pa(a,b) IS
 VAR c,d
 BEGIN

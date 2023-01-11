@@ -1,11 +1,11 @@
 #include "Variable.h"
 
-Variable::Variable(const unsigned int value, const unsigned int memory_position) :
+Variable::Variable(const unsigned long long value, const unsigned int memory_position) :
 m_value(value), m_memory_position(memory_position) {
 
 }
 
-Variable::Variable(std::string name, const unsigned int value, const unsigned int memory_position) :
+Variable::Variable(std::string name, const unsigned long long value, const unsigned int memory_position) :
 m_name(std::move(name)), m_value(value), m_memory_position(memory_position) {
 
 }
@@ -36,11 +36,11 @@ std::string Variable::get_name() {
 	return m_name;
 }
 
-void Variable::set_value(const unsigned int value) {
+void Variable::set_value(const unsigned long long value) {
 	m_value = value;
 }
 
-unsigned int Variable::get_value() const {
+unsigned long long Variable::get_value() const {
 	return m_value;
 }
 
