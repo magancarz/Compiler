@@ -168,8 +168,10 @@ int parser_main(int argc, char** argv) {
     }
 
     // output generated code
+	#ifdef _DEBUG
     std::cout << code_generator->get_code() << std::endl;
-    
+	#endif
+
     code_generator->generate_output();
 
     delete code_generator;

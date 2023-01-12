@@ -776,7 +776,7 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		// check if divisor is 0 or bigger than dividend
 		load_value_to_accumulator(temp1_variable);
 		const unsigned long long jump_variable = m_command_pointer;
-		write_code("JZERO", jump_variable + 54LL);
+		write_code("JZERO", jump_variable + 56LL);
 		sub_value_from_accumulator(temp2_variable);
 		write_code("JZERO", jump_variable + 5LL);
 		load_value_to_accumulator(temp2_variable);

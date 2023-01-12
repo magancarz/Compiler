@@ -5,7 +5,7 @@
 
 #include "../memory/Memory.h"
 
-#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
+#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
 
 struct Condition {
 	unsigned int condition_code_size;
