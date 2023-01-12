@@ -40,13 +40,13 @@ void Memory::initialize_helping_variables() {
 	add_variable_to_memory(1);
 }
 
-void Memory::add_variable_to_memory(const unsigned int value) {
+void Memory::add_variable_to_memory(const unsigned long long value) {
 	auto* new_variable = new Variable(value, m_free_memory_pointer);
 	m_variables.push_back(new_variable);
 	m_free_memory_pointer++;
 }
 
-void Memory::add_variable_to_memory(const std::string& name, const unsigned int value) {
+void Memory::add_variable_to_memory(const std::string& name, const unsigned long long value) {
 	if(!name.empty() && check_if_variable_exists(name)) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Variable " + name + " already exist.\n");
 	}
@@ -64,12 +64,12 @@ Variable* Memory::get_variable_from_memory(const std::string& name) const {
 	throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Variable " + name + " doesn't exist.\n");
 }
 
-void Memory::change_variable_value(const unsigned int memory_position, const unsigned int value) const {
+void Memory::change_variable_value(const unsigned int memory_position, const unsigned long long value) const {
 	Variable* variable = m_variables.at(memory_position);
 	variable->set_value(value);
 }
 
-void Memory::change_variable_value(const std::string& name, const unsigned int value) const {
+void Memory::change_variable_value(const std::string& name, const unsigned long long value) const {
 	if(!name.empty() && check_if_variable_exists(name)) {
 		Variable* variable = get_variable(name);
 		variable->set_value(value);
@@ -96,7 +96,7 @@ Variable* Memory::find_variable(const std::string& name) const {
 	return variable;
 }
 
-Variable* Memory::get_value_holder(const unsigned int value) {
+Variable* Memory::get_value_holder(const unsigned long long value) {
 	// return variable as value holder for a constant
 	return new Variable("", value, 0);
 }

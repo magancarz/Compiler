@@ -11,8 +11,8 @@ CodeGenerator::CodeGenerator(int argc, char** argv) {
     m_output = std::ofstream(argv[2]);
 
 	// initialize "one" variable
-	write_code("SET", 1);
-	write_code("STORE", 7);
+	write_code("SET", 1LL);
+	write_code("STORE", 7LL);
 }
 
 CodeGenerator::~CodeGenerator() {
@@ -31,7 +31,7 @@ void CodeGenerator::write_code(const std::string& code) {
 	m_command_pointer++;
 }
 
-void CodeGenerator::write_code(const std::string& code, const unsigned int value) {
+void CodeGenerator::write_code(const std::string& code, const unsigned long long value) {
 	std::stringstream final_code;
 	final_code << code << " " << value;
 	m_code.push_back(final_code.str());
@@ -45,7 +45,7 @@ void CodeGenerator::change_code(const unsigned int code_position, const std::str
 	m_code.at(code_position) = final_code.str();
 }
 
-void CodeGenerator::change_code(const unsigned int code_position, const std::string& code, const unsigned int value) {
+void CodeGenerator::change_code(const unsigned int code_position, const std::string& code, const unsigned long long value) {
 	std::stringstream final_code;
 	final_code << code << " " << value;
 	m_code.at(code_position) = final_code.str();
@@ -92,7 +92,7 @@ unsigned int CodeGenerator::set_value_to_accumulator(Variable* variable) {
 		return load_value_to_accumulator(variable);
 	}
 
-	const unsigned int value = variable->get_value();
+	const unsigned long long value = variable->get_value();
 	m_memory->change_variable_value(0, value);
 	
 	write_code("SET", value);
@@ -100,7 +100,7 @@ unsigned int CodeGenerator::set_value_to_accumulator(Variable* variable) {
 	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::set_value_to_accumulator(const unsigned int value) {
+unsigned int CodeGenerator::set_value_to_accumulator(const unsigned long long value) {
 	const unsigned int command_start = m_command_pointer;
 
 	m_memory->change_variable_value(0, value);
@@ -136,17 +136,17 @@ unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, co
 	const unsigned int command_start = m_command_pointer;
 
 	if(!value.empty()) {
-		const unsigned int int_value = std::stoi(value);
+		const unsigned long long int_value = std::stoll(value);
 		assign_value_to_variable(name, int_value);
 	} else {
-		constexpr unsigned int int_value = 0;
+		constexpr unsigned long long int_value = 0;
 		assign_value_to_variable(name, int_value);
 	}
 
 	return m_command_pointer - command_start;
 }
 
-unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, const unsigned int value) {
+unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, const unsigned long long value) {
 	const unsigned int command_start = m_command_pointer;
 
 	Variable* variable = m_memory->get_variable(name);
@@ -162,7 +162,7 @@ unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, co
 unsigned int CodeGenerator::assign_value_to_variable(const std::string& name, const Variable* variable) {
 	const unsigned int command_start = m_command_pointer;
 
-	const unsigned int value = variable->get_value();
+	const unsigned long long value = variable->get_value();
 	Variable* var = m_memory->get_variable(name);
 	var->set_value(value);
 	var->set_is_initialized(true);
@@ -248,7 +248,7 @@ unsigned int CodeGenerator::execute_procedure(const std::string& procedure_name,
 		}
 
 		// store code position after the execution to use JUMPI after the procedure
-		set_value_to_accumulator(m_command_pointer + 3);
+		set_value_to_accumulator(m_command_pointer + 3LL);
 		store_value_from_accumulator(executed_procedure->get_procedure_variables().at(0));
 
 		// jump to the beginning of the executed procedure
@@ -410,9 +410,9 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int a_val = a->get_value();
-		const unsigned int b_val = b->get_value();
-		const unsigned int result = a_val + b_val;
+		const unsigned long long a_val = a->get_value();
+		const unsigned long long b_val = b->get_value();
+		const unsigned long long result = a_val + b_val;
 		set_value_to_accumulator(result);
 
 	} else if(a->get_name().empty()) {
@@ -444,9 +444,9 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int a_val = a->get_value();
-		const unsigned int b_val = b->get_value();
-		const unsigned int result = b_val > a_val ? 0 : a_val - b_val;
+		const unsigned long long a_val = a->get_value();
+		const unsigned long long b_val = b->get_value();
+		const unsigned long long result = b_val > a_val ? 0 : a_val - b_val;
 		
 		set_value_to_accumulator(result);
 
@@ -475,8 +475,8 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
 
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 	
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -488,11 +488,11 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = a_val * b_val;
+		const unsigned long long result = a_val * b_val;
 		set_value_to_accumulator(result);
 
 	} else {
-		constexpr unsigned int zero = 0;
+		constexpr unsigned long long zero = 0;
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
 		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
@@ -518,13 +518,13 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 		set_value_to_accumulator(zero);
 		store_value_from_accumulator(temp3_variable);
 
-		const unsigned int start_of_the_loop = m_command_pointer;
+		const unsigned long long start_of_the_loop = m_command_pointer;
 		load_value_to_accumulator(temp2_variable);
-		write_code("JZERO", m_command_pointer + 24);
+		write_code("JZERO", m_command_pointer + 24LL);
 
 		// check if temp2 is odd
 		sub_value_from_accumulator(one_variable);
-		write_code("JZERO", m_command_pointer + 19); // jump if temp2 is equal to 1
+		write_code("JZERO", m_command_pointer + 19LL); // jump if temp2 is equal to 1
 		load_value_to_accumulator(temp2_variable);
 		divide_accumulator_by_half();
 		store_value_from_accumulator(temp4_variable);
@@ -534,7 +534,7 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 		sub_value_from_accumulator(temp4_variable);
 
 		// jump if temp2 is even
-		write_code("JZERO", m_command_pointer + 4);
+		write_code("JZERO", m_command_pointer + 4LL);
 
 		// if temp2 is odd, then add temp1 to the result
 		load_value_to_accumulator(temp3_variable);
@@ -566,8 +566,8 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 
 unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -579,10 +579,10 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = (b_val != 0)? a_val % b_val : 0;
+		const unsigned long long result = (b_val != 0)? a_val % b_val : 0;
 		set_value_to_accumulator(result);
 	} else {
-		constexpr unsigned int zero = 0;
+		constexpr unsigned long long zero = 0;
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
 		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
@@ -620,22 +620,22 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 
 		// check if divisor is 0 or bigger than dividend
 		load_value_to_accumulator(temp1_variable);
-		const unsigned int jump_variable = m_command_pointer;
-		write_code("JZERO", jump_variable + 54);
+		const unsigned long long jump_variable = m_command_pointer;
+		write_code("JZERO", jump_variable + 54LL);
 		sub_value_from_accumulator(temp2_variable);
-		write_code("JZERO", jump_variable + 5);
+		write_code("JZERO", jump_variable + 5LL);
 		set_value_to_accumulator(zero);
-		write_code("JUMP", jump_variable + 54);
+		write_code("JUMP", jump_variable + 54LL);
 
 		// start of the loop
-		const unsigned int start_of_the_dividing_loop = m_command_pointer;
+		const unsigned long long start_of_the_dividing_loop = m_command_pointer;
 
 		// check if current value >= remaining dividend
 		load_value_to_accumulator(temp5_variable);
 		sub_value_from_accumulator(temp4_variable);
 		
 		// jump to position where we can check if value > or == remaining dividend
-		write_code("JZERO", m_command_pointer + 8);
+		write_code("JZERO", m_command_pointer + 8LL);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
 		load_value_to_accumulator(temp3_variable);
@@ -653,7 +653,7 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 		load_value_to_accumulator(temp4_variable);
 		sub_value_from_accumulator(temp5_variable);
 		
-		write_code("JPOS", m_command_pointer + 31);
+		write_code("JPOS", m_command_pointer + 31LL);
 
 		// if it is == then subtract current power of 2 quotient equivalent from remaining dividend
 		load_value_to_accumulator(temp5_variable);
@@ -665,14 +665,14 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 		store_value_from_accumulator(temp6_variable);
 
 		// jump to the end of calculations
-		write_code("JUMP", m_command_pointer + 31);
+		write_code("JUMP", m_command_pointer + 31LL);
 
 		// divide current power of 2 and it's quotient equivalent by 2
-		const unsigned int add_to_result_jump_position = m_command_pointer;
+		const unsigned long long add_to_result_jump_position = m_command_pointer;
 		load_value_to_accumulator(temp4_variable);
 		divide_accumulator_by_half();
 		store_value_from_accumulator(temp4_variable);
-		write_code("JPOS", m_command_pointer + 3);
+		write_code("JPOS", m_command_pointer + 3LL);
 		load_value_to_accumulator(temp1_variable);
 		store_value_from_accumulator(temp4_variable);
 		load_value_to_accumulator(temp5_variable);
@@ -683,7 +683,7 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 		load_value_to_accumulator(temp3_variable);
 		divide_accumulator_by_half();
 		store_value_from_accumulator(temp3_variable);
-		write_code("JPOS", m_command_pointer + 3);
+		write_code("JPOS", m_command_pointer + 3LL);
 		set_value_to_accumulator(1);
 		store_value_from_accumulator(temp3_variable);
 		load_value_to_accumulator(temp6_variable);
@@ -704,7 +704,7 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 		// then end calculations
 		load_value_to_accumulator(temp3_variable);
 		sub_value_from_accumulator(one_variable);
-		write_code("JZERO", m_command_pointer + 5);
+		write_code("JZERO", m_command_pointer + 5LL);
 		write_code("JUMP", add_to_result_jump_position);
 
 		// add current power of 2 quotient equivalent to the result
@@ -721,8 +721,8 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 
 unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
@@ -734,10 +734,10 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 	
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = (b_val != 0)? a_val % b_val : 0;
+		const unsigned long long result = (b_val != 0)? a_val % b_val : 0;
 		set_value_to_accumulator(result);
 	} else {
-		constexpr unsigned int zero = 0;
+		constexpr unsigned long long zero = 0;
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
 		Variable* temp2_variable = m_memory->get_variable_from_memory(2);
 		Variable* temp3_variable = m_memory->get_variable_from_memory(3);
@@ -775,22 +775,22 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 
 		// check if divisor is 0 or bigger than dividend
 		load_value_to_accumulator(temp1_variable);
-		const unsigned int jump_variable = m_command_pointer;
-		write_code("JZERO", jump_variable + 54);
+		const unsigned long long jump_variable = m_command_pointer;
+		write_code("JZERO", jump_variable + 56LL);
 		sub_value_from_accumulator(temp2_variable);
-		write_code("JZERO", jump_variable + 5);
+		write_code("JZERO", jump_variable + 5LL);
 		load_value_to_accumulator(temp2_variable);
-		write_code("JUMP", jump_variable + 54);
+		write_code("JUMP", jump_variable + 54LL);
 
 		// start of the loop
-		const unsigned int start_of_the_dividing_loop = m_command_pointer;
+		const unsigned long long start_of_the_dividing_loop = m_command_pointer;
 
 		// check if current value >= remaining dividend
 		load_value_to_accumulator(temp5_variable);
 		sub_value_from_accumulator(temp4_variable);
 		
 		// jump to position where we can check if value > or == remaining dividend
-		write_code("JZERO", m_command_pointer + 8);
+		write_code("JZERO", m_command_pointer + 8LL);
 
 		// multiply by 2 current power of 2 and it's multiplicand equivalent 
 		load_value_to_accumulator(temp3_variable);
@@ -808,7 +808,7 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		load_value_to_accumulator(temp4_variable);
 		sub_value_from_accumulator(temp5_variable);
 		
-		write_code("JPOS", m_command_pointer + 31);
+		write_code("JPOS", m_command_pointer + 31LL);
 
 		// if it is == then subtract current power of 2 quotient equivalent from remaining dividend
 		load_value_to_accumulator(temp5_variable);
@@ -820,14 +820,14 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		store_value_from_accumulator(temp6_variable);
 
 		// jump to the end of calculations
-		write_code("JUMP", m_command_pointer + 31);
+		write_code("JUMP", m_command_pointer + 31LL);
 
 		// divide current power of 2 and it's quotient equivalent by 2
-		const unsigned int add_to_result_jump_position = m_command_pointer;
+		const unsigned long long add_to_result_jump_position = m_command_pointer;
 		load_value_to_accumulator(temp4_variable);
 		divide_accumulator_by_half();
 		store_value_from_accumulator(temp4_variable);
-		write_code("JPOS", m_command_pointer + 3);
+		write_code("JPOS", m_command_pointer + 3LL);
 		load_value_to_accumulator(temp1_variable);
 		store_value_from_accumulator(temp4_variable);
 		load_value_to_accumulator(temp5_variable);
@@ -838,7 +838,7 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		load_value_to_accumulator(temp3_variable);
 		divide_accumulator_by_half();
 		store_value_from_accumulator(temp3_variable);
-		write_code("JPOS", m_command_pointer + 3);
+		write_code("JPOS", m_command_pointer + 3LL);
 		set_value_to_accumulator(1);
 		store_value_from_accumulator(temp3_variable);
 		load_value_to_accumulator(temp6_variable);
@@ -859,7 +859,7 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		// then end calculations
 		load_value_to_accumulator(temp3_variable);
 		sub_value_from_accumulator(one_variable);
-		write_code("JZERO", m_command_pointer + 5);
+		write_code("JZERO", m_command_pointer + 5LL);
 		write_code("JUMP", add_to_result_jump_position);
 
 		// add current power of 2 quotient equivalent to the result
@@ -876,8 +876,8 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -887,10 +887,10 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position, jump_if_true_position;
+	unsigned long long jump_if_false_position, jump_if_true_position;
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = (a_val == b_val)? 1 : 0;
+		const unsigned long long result = (a_val == b_val)? 1 : 0;
 		set_value_to_accumulator(result);
 	} else {
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
@@ -915,18 +915,18 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 
 		// check if b <= a and if a <= b, if it is, then return true, otherwise return false
 		sub_value_from_accumulator(temp1_variable);
-		write_code("JPOS", m_command_pointer + 5);
+		write_code("JPOS", m_command_pointer + 5LL);
 
 		load_value_to_accumulator(temp1_variable);
 		sub_value_from_accumulator(temp2_variable);
 		
-		write_code("JPOS", m_command_pointer + 2);
+		write_code("JPOS", m_command_pointer + 2LL);
 		
 		jump_if_true_position = m_command_pointer;
-		write_code("JUMP", jump_if_true_position + 2);
+		write_code("JUMP", jump_if_true_position + 2LL);
 		
 		jump_if_false_position = m_command_pointer;
-		write_code("JUMP", jump_if_false_position + 1);
+		write_code("JUMP", jump_if_false_position + 1LL);
 
 	}
 
@@ -936,8 +936,8 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -947,7 +947,7 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position, jump_if_true_position;
+	unsigned long long jump_if_false_position, jump_if_true_position;
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
 		const unsigned int result = (a_val != b_val)? 1 : 0;
@@ -975,15 +975,15 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 
 		// check if b <= a and if a < b, if it is, then return true, otherwise return false
 		sub_value_from_accumulator(temp1_variable);
-		write_code("JPOS", m_command_pointer + 4);
+		write_code("JPOS", m_command_pointer + 4LL);
 
 		load_value_to_accumulator(temp1_variable);
 		sub_value_from_accumulator(temp2_variable);
 		jump_if_true_position = m_command_pointer;
-		write_code("JPOS", jump_if_true_position + 2);
+		write_code("JPOS", jump_if_true_position + 2LL);
 		
 		jump_if_false_position = m_command_pointer;
-		write_code("JUMP", jump_if_false_position + 1);
+		write_code("JUMP", jump_if_false_position + 1LL);
 	}
 
 	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
@@ -992,8 +992,8 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -1003,10 +1003,10 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position, jump_if_true_position;
+	unsigned long long jump_if_false_position, jump_if_true_position;
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = (a_val > b_val)? 1 : 0;
+		const unsigned long long result = (a_val > b_val)? 1 : 0;
 		set_value_to_accumulator(result);
 	} else {
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
@@ -1029,9 +1029,9 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 		// check if b >= a, if it is, then return false, otherwise return true
 		sub_value_from_accumulator(temp1_variable);
 		jump_if_false_position = m_command_pointer;
-		write_code("JZERO", jump_if_false_position + 2);
+		write_code("JZERO", jump_if_false_position + 2LL);
 		jump_if_true_position = m_command_pointer;
-		write_code("JUMP", jump_if_true_position + 1);
+		write_code("JUMP", jump_if_true_position + 1LL);
 	}
 
 	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
@@ -1040,8 +1040,8 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::less(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -1051,9 +1051,9 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position, jump_if_true_position;
+	unsigned long long jump_if_false_position, jump_if_true_position;
 	if(a->get_name().empty() && b->get_name().empty()) {
-		const unsigned int result = (a_val < b_val)? 1 : 0;
+		const unsigned long long result = (a_val < b_val)? 1 : 0;
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
 		set_value_to_accumulator(result);
 	} else {
@@ -1077,9 +1077,9 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 		// check if b > a, if it is, then return false, otherwise return true
 		sub_value_from_accumulator(temp1_variable);
 		jump_if_false_position = m_command_pointer;
-		write_code("JZERO", jump_if_false_position + 2);
+		write_code("JZERO", jump_if_false_position + 2LL);
 		jump_if_true_position = m_command_pointer;
-		write_code("JUMP", jump_if_true_position + 1);
+		write_code("JUMP", jump_if_true_position + 1LL);
 	}
 
 	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
@@ -1088,8 +1088,8 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -1099,10 +1099,10 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position, jump_if_true_position;
+	unsigned long long jump_if_false_position, jump_if_true_position;
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
-		const unsigned int result = (a_val >= b_val)? 1 : 0;
+		const unsigned long long result = (a_val >= b_val)? 1 : 0;
 		set_value_to_accumulator(result);
 	} else {
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
@@ -1125,9 +1125,9 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 		// check if b > a, if it is, then return false, otherwise return true
 		sub_value_from_accumulator(temp1_variable);
 		jump_if_false_position = m_command_pointer;
-		write_code("JPOS", jump_if_false_position + 2);
+		write_code("JPOS", jump_if_false_position + 2L);
 		jump_if_true_position = m_command_pointer;
-		write_code("JUMP", jump_if_true_position + 1);
+		write_code("JUMP", jump_if_true_position + 1L);
 	}
 
 	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};
@@ -1136,9 +1136,9 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 
 Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
-	const unsigned int a_val = a->get_value();
-	const unsigned int b_val = b->get_value();
-	const unsigned int result = (a_val >= b_val)? 1 : 0;
+	const unsigned long long a_val = a->get_value();
+	const unsigned long long b_val = b->get_value();
+	const unsigned long long result = (a_val >= b_val)? 1 : 0;
 
 	if(!a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
@@ -1148,7 +1148,7 @@ Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	unsigned int jump_if_false_position = 0, jump_if_true_position = 0;
+	unsigned long long jump_if_false_position = 0, jump_if_true_position = 0;
 	if(a->get_name().empty() && b->get_name().empty()) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
 		set_value_to_accumulator(result);
@@ -1173,9 +1173,9 @@ Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 		// check if b > a, if it is, then return false, otherwise return true
 		sub_value_from_accumulator(temp1_variable);
 		jump_if_false_position = m_command_pointer;
-		write_code("JPOS", jump_if_false_position + 2);
+		write_code("JPOS", jump_if_false_position + 2L);
 		jump_if_true_position = m_command_pointer;
-		write_code("JUMP", jump_if_true_position + 1);
+		write_code("JUMP", jump_if_true_position + 1L);
 	}
 
 	auto* condition = new Condition{m_command_pointer - command_start, jump_if_true_position, jump_if_false_position};

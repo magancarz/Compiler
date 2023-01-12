@@ -5,12 +5,12 @@
 
 #include "../memory/Memory.h"
 
-#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 0
+#define CODE_GENERATOR_DEBUG_COMMAND_LINES_NO 1
 
 struct Condition {
 	unsigned int condition_code_size;
-	unsigned int jump_if_true_position;
-	unsigned int jump_if_false_position;
+	unsigned long long jump_if_true_position;
+	unsigned long long jump_if_false_position;
 };
 
 class CodeGenerator {
@@ -22,11 +22,11 @@ public:
 
 	// adds new line of code to m_code
 	void write_code(const std::string& code);
-	void write_code(const std::string& code, unsigned int value);
+	void write_code(const std::string& code, unsigned long long value);
 
 	// changes line of code at given position
 	void change_code(unsigned int code_position, const std::string& code);
-	void change_code(unsigned int code_position, const std::string& code, unsigned int value);
+	void change_code(unsigned int code_position, const std::string& code, unsigned long long value);
 
 	// adds variable value to accumulator and generates machine code for this operation
 	unsigned int add_value_to_accumulator(const Variable* variable);
@@ -39,7 +39,7 @@ public:
 
 	// sets value to accumulator and generates machine code for this operation
 	unsigned int set_value_to_accumulator(Variable* variable);
-	unsigned int set_value_to_accumulator(unsigned int value);
+	unsigned int set_value_to_accumulator(unsigned long long value);
 
 	// store value from accumulator to a specific variable in memory and generates machine code for this operation
 	unsigned int store_value_from_accumulator(Variable* variable);
@@ -47,7 +47,7 @@ public:
 
 	// store value from accumulator to a specific variable (used in assigning variables values) and generates machine code for this operation
 	unsigned int assign_value_to_variable(const std::string& name, const std::string& value);
-	unsigned int assign_value_to_variable(const std::string& name, unsigned int value);
+	unsigned int assign_value_to_variable(const std::string& name, unsigned long long value);
 	unsigned int assign_value_to_variable(const std::string& name, const Variable* variable);
 
 	// generates code for READ command
