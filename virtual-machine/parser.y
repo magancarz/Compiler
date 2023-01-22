@@ -8,12 +8,12 @@
 %code requires { 
 #include<vector> 
 #include<utility>
-using namespace std;
-}
-%{
 
 #define YYSTYPE long long
 
+using namespace std;
+}
+%{
 #include <iostream>
 #include <utility>
 #include <vector>
