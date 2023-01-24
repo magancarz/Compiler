@@ -17,7 +17,7 @@ END
 PROGRAM IS
 VAR n,m,potega,dzielnik
 BEGIN
-    READ n;
+    n := 1234567890;
     dzielnik:=2;
     m:=dzielnik*dzielnik;
     WHILE n>=m DO
