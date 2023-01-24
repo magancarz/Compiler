@@ -319,6 +319,27 @@ unsigned int CodeGenerator::generate_middle_if_else_jump() {
 	return m_command_pointer - command_start;
 }
 
+void CodeGenerator::loop_begin() {
+	//initialize new tracking vector for loop variables, it stores variables that occur in the loop and if they are used
+	m_loop_variables_tracking[m_loop_count] = std::unordered_map<unsigned int, bool>();
+
+	++m_loop_count;
+}
+
+void CodeGenerator::loop_end() {
+	--m_loop_count;
+
+	for(const auto v : m_loop_variables_tracking[m_loop_count]) {
+		if(v.first >= m_memory->get_memory_variables().size())
+			continue;
+
+		const auto var = m_memory->get_variable_from_memory(v.first);
+		if(v.second == true && !var->is_initialized()) {
+			throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable in loop" + var->get_name() + ".\n");
+		}
+	}
+}
+
 unsigned int CodeGenerator::while_loop(const Condition* condition, const unsigned int commands_length) {
 	const unsigned int command_start = m_command_pointer;
 
@@ -400,11 +421,11 @@ unsigned int CodeGenerator::print_out_value(Variable* variable) {
 unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -419,13 +440,20 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 		set_value_to_accumulator(a);
 		add_value_to_accumulator(b);
 
+		m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+
 	} else if(b->get_name().empty()) {
 		set_value_to_accumulator(b);
 		add_value_to_accumulator(a);
 
+		m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+
 	} else {
 		load_value_to_accumulator(a);
 		add_value_to_accumulator(b);
+
+		m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+		m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 	}
 
 	return m_command_pointer - command_start;
