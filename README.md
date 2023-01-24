@@ -82,4 +82,4 @@ Folder with virtual-machine files and code.
 
 ## Contributors
 * [Mateusz Gancarz](https://github.com/magancarz) - compiler code
-* [Dr Maciej Gębala](https://cs.pwr.edu.pl/gebala/) - virtual machine
+* [Dr Maciej Gębala](https://cs.pwr.edu.pl/gebala/) - virtual machine and assignment

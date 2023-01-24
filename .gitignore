@@ -1,2 +1,7 @@
 .vs/
 x64/
+out
+out.mr
+kompilator
+virtual-machine/maszyna-wirtualna
+virtual-machine/maszyna-wirtualna-cln

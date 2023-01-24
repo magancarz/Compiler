@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 #include "../memory/Memory.h"
 
@@ -71,6 +72,10 @@ public:
 	unsigned int if_else_condition(const Condition* condition, unsigned int commands1_length, unsigned int commands2_length);
 	unsigned int generate_middle_if_else_jump();
 
+	// code for managing variables initialization in loops
+	void loop_begin();
+	void loop_end();
+
 	// generates code for WHILE loop
 	unsigned int while_loop(const Condition* condition, unsigned int commands_length);
 
@@ -128,4 +133,7 @@ private:
 
 	// current position at which new code will be written
 	unsigned int m_command_pointer = 0;
+
+	unsigned int m_loop_count = 0;
+	std::unordered_map<unsigned int, std::unordered_map<unsigned int, bool>> m_loop_variables_tracking;
 };
