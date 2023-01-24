@@ -68,7 +68,10 @@ public:
 
 	std::vector<Procedure*>& get_procedures();
 
+	static const unsigned int last_register = 8;
+
 private:
+
 	unsigned int m_free_memory_pointer = 0;
 
 	std::vector<Variable*> m_variables;

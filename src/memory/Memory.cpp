@@ -125,7 +125,9 @@ void Memory::add_new_procedure() {
 	// add new procedure to memory and add variable that functions
 	// as a storage for holding position to go back from procedure
 	m_current_procedure = new Procedure();
-	m_current_procedure->get_procedure_variables().push_back(new Variable(true, "", m_free_memory_pointer));
+	const auto procedure_jump_pointer = new Variable(true, "", m_free_memory_pointer);
+	m_current_procedure->get_procedure_variables().push_back(procedure_jump_pointer);
+	m_variables.push_back(procedure_jump_pointer);
 	m_free_memory_pointer++;
 }
 

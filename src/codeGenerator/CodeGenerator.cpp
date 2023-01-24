@@ -330,12 +330,12 @@ void CodeGenerator::loop_end() {
 	--m_loop_count;
 
 	for(const auto v : m_loop_variables_tracking[m_loop_count]) {
-		if(v.first >= m_memory->get_memory_variables().size())
+		if(v.first <= Memory::last_register || v.first >= m_memory->get_memory_variables().size())
 			continue;
 
 		const auto var = m_memory->get_variable_from_memory(v.first);
 		if(v.second == true && !var->is_initialized()) {
-			throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable in loop" + var->get_name() + ".\n");
+			throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + var->get_name() + " in loop.\n");
 		}
 	}
 }
@@ -440,20 +440,24 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 		set_value_to_accumulator(a);
 		add_value_to_accumulator(b);
 
-		m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+		if(m_loop_count)
+			m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 
 	} else if(b->get_name().empty()) {
 		set_value_to_accumulator(b);
 		add_value_to_accumulator(a);
 
-		m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+		if(m_loop_count)
+			m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 
 	} else {
 		load_value_to_accumulator(a);
 		add_value_to_accumulator(b);
 
-		m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
-		m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+		if(m_loop_count) {
+			m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+			m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+		}
 	}
 
 	return m_command_pointer - command_start;
@@ -462,11 +466,11 @@ unsigned int CodeGenerator::add(Variable* a, Variable* b) {
 unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 	const unsigned int command_start = m_command_pointer;
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -482,6 +486,9 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 		set_value_to_accumulator(a);
 		sub_value_from_accumulator(b);
 
+		if(m_loop_count)
+			m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+
 	} else if(b->get_name().empty()) {
 		// to do subtraction in case of VARIABLE - CONSTANT, we need to assign CONSTANT value to the temporary variable,
 		// load variable value to the accumulator and then subtract constant value from it
@@ -492,9 +499,17 @@ unsigned int CodeGenerator::subtract(Variable* a, Variable* b) {
 		load_value_to_accumulator(a);
 		sub_value_from_accumulator(temp_variable);
 
+		if(m_loop_count)
+			m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+
 	} else {
 		load_value_to_accumulator(a);
 		sub_value_from_accumulator(b);
+
+		if(m_loop_count) {
+			m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
+			m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
+		}
 	}
 
 	return m_command_pointer - command_start;
@@ -506,11 +521,11 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 	
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
@@ -532,6 +547,9 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 			set_value_to_accumulator(a_val);
 		} else {
 			load_value_to_accumulator(a);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp1_variable);
 		
@@ -539,6 +557,9 @@ unsigned int CodeGenerator::multiply(Variable* a, Variable* b) {
 			set_value_to_accumulator(b_val);
 		} else {
 			load_value_to_accumulator(b);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp2_variable);
 
@@ -597,11 +618,11 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
@@ -609,6 +630,7 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
 		const unsigned long long result = (b_val != 0)? a_val % b_val : 0;
 		set_value_to_accumulator(result);
+
 	} else {
 		constexpr unsigned long long zero = 0;
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
@@ -625,6 +647,9 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 			set_value_to_accumulator(a_val);
 		} else {
 			load_value_to_accumulator(a);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp2_variable);
 		store_value_from_accumulator(temp5_variable);
@@ -634,6 +659,9 @@ unsigned int CodeGenerator::divide(Variable* a, Variable* b) {
 			set_value_to_accumulator(b_val);
 		} else {
 			load_value_to_accumulator(b);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp1_variable);
 		store_value_from_accumulator(temp4_variable);
@@ -752,11 +780,11 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 	
@@ -764,6 +792,7 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 		// if both values are constant, then simply evaluate the expression and set the result to the accumulator
 		const unsigned long long result = (b_val != 0)? a_val % b_val : 0;
 		set_value_to_accumulator(result);
+
 	} else {
 		constexpr unsigned long long zero = 0;
 		Variable* temp1_variable = m_memory->get_variable_from_memory(1);
@@ -780,6 +809,9 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 			set_value_to_accumulator(a_val);
 		} else {
 			load_value_to_accumulator(a);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp2_variable);
 		store_value_from_accumulator(temp5_variable);
@@ -789,6 +821,9 @@ unsigned int CodeGenerator::modulo(Variable* a, Variable* b) {
 			set_value_to_accumulator(b_val);
 		} else {
 			load_value_to_accumulator(b);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 		store_value_from_accumulator(temp1_variable);
 		store_value_from_accumulator(temp4_variable);
@@ -907,11 +942,11 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -931,6 +966,9 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(a);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		
 		if(b->get_name().empty()) {
@@ -939,6 +977,9 @@ Condition* CodeGenerator::equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(b);
 			store_value_from_accumulator(temp2_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		// check if b <= a and if a <= b, if it is, then return true, otherwise return false
@@ -967,11 +1008,11 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -991,6 +1032,9 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(a);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		
 		if(b->get_name().empty()) {
@@ -999,6 +1043,9 @@ Condition* CodeGenerator::not_equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(b);
 			store_value_from_accumulator(temp2_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		// check if b <= a and if a < b, if it is, then return true, otherwise return false
@@ -1023,11 +1070,11 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -1046,12 +1093,18 @@ Condition* CodeGenerator::greater(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(b);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		if(a->get_name().empty()) {
 			set_value_to_accumulator(a_val);
 		} else {
 			load_value_to_accumulator(a);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 
 		// check if b >= a, if it is, then return false, otherwise return true
@@ -1071,11 +1124,11 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -1094,12 +1147,18 @@ Condition* CodeGenerator::less(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(a);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 
 		if(b->get_name().empty()) {
 			set_value_to_accumulator(b_val);
 		} else {
 			load_value_to_accumulator(b);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		// check if b > a, if it is, then return false, otherwise return true
@@ -1119,11 +1178,11 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 	const unsigned long long a_val = a->get_value();
 	const unsigned long long b_val = b->get_value();
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -1142,12 +1201,18 @@ Condition* CodeGenerator::greater_or_equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(a);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 		
 		if(b->get_name().empty()) {
 			set_value_to_accumulator(b_val);
 		} else {
 			load_value_to_accumulator(b);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		// check if b > a, if it is, then return false, otherwise return true
@@ -1168,11 +1233,11 @@ Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 	const unsigned long long b_val = b->get_value();
 	const unsigned long long result = (a_val >= b_val)? 1 : 0;
 
-	if(!a->get_name().empty() && !a->is_initialized()) {
+	if(!m_loop_count && !a->get_name().empty() && !a->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + a->get_name() + ".\n");
 	}
 
-	if(!b->get_name().empty() && !b->is_initialized()) {
+	if(!m_loop_count && !b->get_name().empty() && !b->is_initialized()) {
 		throw std::runtime_error("Error at line " + std::to_string(yylineno) + ": Use of uninitialized variable " + b->get_name() + ".\n");
 	}
 
@@ -1190,12 +1255,18 @@ Condition* CodeGenerator::less_or_equal(Variable* a, Variable* b) {
 		} else {
 			load_value_to_accumulator(b);
 			store_value_from_accumulator(temp1_variable);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][b->get_memory_position()] = true;
 		}
 
 		if(a->get_name().empty()) {
 			set_value_to_accumulator(a_val);
 		} else {
 			load_value_to_accumulator(a);
+
+			if(m_loop_count)
+				m_loop_variables_tracking[m_loop_count - 1][a->get_memory_position()] = true;
 		}
 
 		// check if b > a, if it is, then return false, otherwise return true
